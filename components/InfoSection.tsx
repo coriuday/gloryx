@@ -21,7 +21,7 @@ const InfoSection: React.FC = () => {
             </h2>
 
             <p className="font-sans text-xl text-gray-700 mb-6 font-light leading-relaxed border-l-4 border-gx-orange pl-6">
-              GloryX isn't just an agency; it's an arsenal. We combine cutting-edge automation technology with high-octane creative services to streamline your business and amplify your brand voice.
+              GloryX isn&apos;t just an agency; it&apos;s an arsenal. We combine cutting-edge automation technology with high-octane creative services to streamline your business and amplify your brand voice.
             </p>
 
             <p className="font-sans text-lg text-gray-600 mb-12">

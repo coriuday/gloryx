@@ -39,7 +39,7 @@ const Hero: React.FC = () => {
         <div className="w-32 h-2 bg-gx-orange mx-auto mb-8 transform -skew-x-12"></div>
 
         <p className="font-sans text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mb-12 font-light border-l-4 border-gx-green pl-6 text-left md:text-center md:border-l-0 md:pl-0">
-          Full-service digital marketing and automation. We don't just play the game. We rewrite the code.
+          Full-service digital marketing and automation. We don&apos;t just play the game. We rewrite the code.
         </p>
 
         <div className="flex flex-col md:flex-row gap-6 justify-center items-center">

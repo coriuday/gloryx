@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mb-8">
               Redefining the agency experience with raw creativity and precise automation.
-              We don't follow trends, we set the trajectory.
+              We don&apos;t follow trends, we set the trajectory.
             </p>
             <div className="flex space-x-6">
               {[Globe, Twitter, Instagram, Linkedin].map((Icon, i) => (

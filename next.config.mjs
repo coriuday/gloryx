@@ -8,9 +8,6 @@ const nextConfig = {
       },
     ],
   },
-  // Enable SWC minification for better performance
-  swcMinify: true,
-  // Environment variables
   env: {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     API_KEY: process.env.GEMINI_API_KEY,
