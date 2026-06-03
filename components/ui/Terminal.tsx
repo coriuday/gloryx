@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Terminal as TerminalIcon, X, Maximize2, Minimize2, CornerDownLeft } from 'lucide-react';
-import { useAudio } from './AudioProvider';
+import { useAudio } from '@/components/hooks/AudioProvider';
 
 interface Message {
   role: 'user' | 'model' | 'system';

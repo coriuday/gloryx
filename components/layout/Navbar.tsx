@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X, Volume2, VolumeX, Settings } from 'lucide-react';
 import { NAV_ITEMS } from '@/constants';
-import { useAudio } from './AudioProvider';
-import SettingsDrawer from './SettingsDrawer';
+import { useAudio } from '@/components/hooks/AudioProvider';
+import SettingsDrawer from '@/components/ui/SettingsDrawer';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);

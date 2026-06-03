@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAudio } from './AudioProvider';
+import { useAudio } from '@/components/hooks/AudioProvider';
 
 interface IntroLoaderProps {
   onComplete: () => void;

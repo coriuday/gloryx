@@ -3,8 +3,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldAlert, Sliders, ToggleLeft, ToggleRight } from 'lucide-react';
-import { useTheme, THEMES } from './ThemeProvider';
-import { useAudio } from './AudioProvider';
+import { useTheme, THEMES } from '@/components/hooks/ThemeProvider';
+import { useAudio } from '@/components/hooks/AudioProvider';
 
 interface SettingsDrawerProps {
   isOpen: boolean;

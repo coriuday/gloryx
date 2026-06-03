@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Oswald, Roboto } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import LayoutWrapper from "@/components/LayoutWrapper";
+import { ThemeProvider } from "@/components/hooks/ThemeProvider";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 
 const oswald = Oswald({
     variable: "--font-oswald",

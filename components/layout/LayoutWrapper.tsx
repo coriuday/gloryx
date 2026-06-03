@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { useTheme } from './ThemeProvider';
-import { AudioProvider } from './AudioProvider';
-import CustomCursor from './CustomCursor';
-import CrewTicker from './CrewTicker';
-import Terminal from './Terminal';
+import { useTheme } from '@/components/hooks/ThemeProvider';
+import { AudioProvider } from '@/components/hooks/AudioProvider';
+import CustomCursor from '@/components/layout/CustomCursor';
+import CrewTicker from '@/components/layout/CrewTicker';
+import Terminal from '@/components/ui/Terminal';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
