@@ -40,6 +40,77 @@ export default function PlannerPage() {
   const [isCompiling, setIsCompiling] = useState(false);
   const [compileProgress, setCompileProgress] = useState(0);
   const [showDossier, setShowDossier] = useState(false);
+  const [heistResult, setHeistResult] = useState<{ heistCode: string; status: string; blueprint: string } | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const submitHeistPlan = async () => {
+    setIsCompiling(true);
+    setCompileProgress(10);
+    setErrorMsg(null);
+    
+    // Start a simulated loading animation up to 85% while API is resolving
+    let progress = 10;
+    const progressInterval = setInterval(() => {
+      if (progress < 85) {
+        progress += Math.floor(Math.random() * 8) + 2;
+        if (progress > 85) progress = 85;
+        setCompileProgress(progress);
+      }
+    }, 200);
+
+    try {
+      const response = await fetch('/api/heist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          codeName: intel.codeName,
+          corporation: intel.corporation || "",
+          email: intel.email,
+          channel: intel.channel || "",
+          brief: intel.brief || "",
+          targets: selectedTargets,
+          budget: budget,
+          timeline: timeline,
+        }),
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        throw new Error('NETWORK REJECTION: API GATEWAY OFFLINE');
+      }
+
+      const data = await response.json();
+      setHeistResult(data);
+      
+      // Fast forward progress to 100%
+      setCompileProgress(100);
+      setTimeout(() => {
+        setIsCompiling(false);
+        setShowDossier(true);
+        playSuccess();
+      }, 600);
+      
+    } catch (err: any) {
+      clearInterval(progressInterval);
+      console.error(err);
+      setErrorMsg(err.message || 'HEIST COMPILATION FAILURE');
+      // Set heist result to fallback offline data so user isn't stuck
+      setHeistResult({
+        heistCode: `HEIST-FAIL-${Math.floor(Math.random() * 9000 + 1000)}`,
+        status: 'OFFLINE_FALLBACK',
+        blueprint: `CLASSIFIED STRATEGY BLUEPRINT (OFFLINE BACKUP MODEL ACTIVE)\n\n1. TARGET OVERVIEW\nClient corporation '${intel.corporation || "UNKNOWN"}' is requesting a deployment of digital weapons: ${selectedTargets.join(', ').toUpperCase()}.\nOperational scope fits the budget threshold of $${budget.toLocaleString()} and is cleared for tactical implementation.\n\n2. MISSION TIMELINE\n- PHASE I (INTELLIGENCE AUDIT): Deep scan of targets and deployment setup (Days 1-7).\n- PHASE II (DRAFT CODE): Script CRM webhooks and construct marketing campaigns (Days 8-20).\n- PHASE III (DEPLOY SHARDS): Launch landing sites, PPC bid automation, and SEO indexers (Days 21-45).\n- PHASE IV (SECURE LOOT): Calibrate final client conversion paths (Remaining period of ${timeline}).\n\n3. CREW EQUIPMENT\n- Automation: Node.js API bridges and WhatsApp notifications webhooks.\n- SEO: Schema microcode templates and indexing cron listeners.\n- Marketing: Multi-channel PPC custom scripts and audience trackers.\n\n4. EXPECTED LOOT\n- Estimated Lead Processing Time: Reduced from hours to under 120 seconds.\n- Traffic scaling threshold: Target minimum +300% organic lift.\n- Ad budget optimization target: Secure -30% average cost-per-lead reduction.`
+      });
+      setCompileProgress(100);
+      setTimeout(() => {
+        setIsCompiling(false);
+        setShowDossier(true);
+        playSuccess();
+      }, 600);
+    }
+  };
 
   // Hacking Minigame state variables
   const [isHacking, setIsHacking] = useState(false);
@@ -133,23 +204,8 @@ export default function PlannerPage() {
       
       if (nextCount >= 3) {
         setIsHacking(false);
-        setIsCompiling(true);
         setHackLog([]);
-        
-        let current = 0;
-        const interval = setInterval(() => {
-          current += Math.floor(Math.random() * 15) + 5;
-          if (current >= 100) {
-            current = 100;
-            clearInterval(interval);
-            setTimeout(() => {
-              setIsCompiling(false);
-              setShowDossier(true);
-              playSuccess();
-            }, 600);
-          }
-          setCompileProgress(current);
-        }, 150);
+        submitHeistPlan();
       } else {
         let nextNode = Math.floor(Math.random() * 16);
         while (nextNode === activeHackingNode) {
@@ -175,23 +231,8 @@ export default function PlannerPage() {
   const forceBypass = () => {
     playSuccess();
     setIsHacking(false);
-    setIsCompiling(true);
     setHackLog([]);
-    
-    let current = 0;
-    const interval = setInterval(() => {
-      current += Math.floor(Math.random() * 15) + 5;
-      if (current >= 100) {
-        current = 100;
-        clearInterval(interval);
-        setTimeout(() => {
-          setIsCompiling(false);
-          setShowDossier(true);
-          playSuccess();
-        }, 600);
-      }
-      setCompileProgress(current);
-    }, 150);
+    submitHeistPlan();
   };
 
   const calculatedMinRequired = selectedTargets.reduce((sum, currentId) => {
@@ -360,6 +401,12 @@ export default function PlannerPage() {
                   {intel.corporation && <div><span className="text-gx-green print:text-black font-bold">Corporation:</span> {intel.corporation}</div>}
                   <div><span className="text-gx-green print:text-black font-bold">Secure Frequency:</span> {intel.email}</div>
                   {intel.channel && <div><span className="text-gx-green print:text-black font-bold">Comm Port:</span> {intel.channel}</div>}
+                  {heistResult?.heistCode && (
+                    <div><span className="text-gx-green print:text-black font-bold">Transaction Key:</span> {heistResult.heistCode}</div>
+                  )}
+                  {heistResult?.status && (
+                    <div><span className="text-gx-green print:text-black font-bold">Dossier Status:</span> {heistResult.status}</div>
+                  )}
                 </div>
               </div>
 
@@ -399,6 +446,17 @@ export default function PlannerPage() {
                 <p className="whitespace-pre-wrap bg-gx-black/40 p-4 border border-gx-gray italic print:border-black print:bg-white print:text-black">
                   &quot;{intel.brief}&quot;
                 </p>
+              </div>
+            )}
+
+            {heistResult?.blueprint && (
+              <div className="mb-10 font-mono text-sm leading-relaxed border-t border-gx-green/20 pt-6 print:border-black text-gray-300 print:text-black">
+                <h3 className="text-gx-orange font-display font-bold text-lg uppercase tracking-wide mb-3 print:text-black">
+                  5. Operational Blueprint (G.L.O.R.Y. AI Analysis)
+                </h3>
+                <pre className="whitespace-pre-wrap bg-gx-black/40 p-4 border border-gx-gray print:border-black print:bg-white print:text-black font-mono text-xs leading-normal">
+                  {heistResult.blueprint}
+                </pre>
               </div>
             )}
 
