@@ -2,169 +2,321 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, Volume2, VolumeX, Settings } from 'lucide-react';
-import { NAV_ITEMS } from '@/constants';
+import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, Sun, Moon, Settings, Sparkles } from 'lucide-react';
+import { useTheme } from '@/components/hooks/ThemeProvider';
 import { useAudio } from '@/components/hooks/AudioProvider';
 import SettingsDrawer from '@/components/ui/SettingsDrawer';
 
+const NAV_LINKS = [
+  { label: 'Services', href: '/services' },
+  { label: 'Work',     href: '/work' },
+  { label: 'Studio',   href: '/about' },
+  { label: 'Contact',  href: '/contact' },
+];
+
 const Navbar: React.FC = () => {
+  const { isDark, toggleTheme } = useTheme();
+  const { isMuted, toggleMute } = useAudio();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { isMuted, toggleMute, playClick, playHover } = useAudio();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  // Avoid hydration mismatch: isDark comes from localStorage which
+  // the server doesn't know about. We delay theme-dependent rendering
+  // until after the first client paint.
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    setMounted(true);
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleMuteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggleMute();
-  };
+  const closeMenu = () => setIsOpen(false);
 
   return (
-    <nav
-      className={`fixed w-full z-50 transition-all duration-300 border-b ${scrolled
-        ? 'bg-gx-black/95 backdrop-blur-md border-gx-green py-3'
-        : 'bg-transparent border-transparent py-6'
-        }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-12">
-
-          {/* Logo */}
-          <Link
-            href="/"
-            onClick={playClick}
-            onMouseEnter={playHover}
-            className="flex-shrink-0 flex items-center gap-2 group cursor-pointer"
-          >
-            <div className="w-10 h-10 bg-gx-green flex items-center justify-center font-display font-bold text-xl text-gx-black border-2 border-transparent group-hover:border-white transition-all">
-              G
+    <>
+      {/* ── Floating Pill Navbar ────────────────────────────── */}
+      <motion.nav
+        className="fixed z-50 w-full flex justify-center"
+        style={{ top: 'var(--navbar-top, 12px)', paddingInline: '1rem' }}
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.1 }}
+      >
+        <motion.div
+          className="w-full max-w-5xl rounded-2xl flex items-center justify-between px-4 md:px-6 h-14 transition-all duration-500"
+          style={{
+            background: scrolled ? 'var(--glass-2)' : 'var(--glass-1)',
+            backdropFilter: 'blur(24px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+            border: `1.5px solid ${scrolled ? 'var(--glass-border-2)' : 'var(--glass-border-1)'}`,
+            boxShadow: scrolled
+              ? 'var(--shadow-card), var(--glass-inner)'
+              : '0 4px 24px rgba(139,92,246,0.06), var(--glass-inner)',
+          }}
+        >
+          {/* ── Logo ─────────────────────────────────────────── */}
+          <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
+            <div
+              className="relative w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden"
+              style={{ background: 'var(--gradient-primary)' }}
+            >
+              <span className="font-display font-bold text-xs text-white tracking-tight z-10">BS</span>
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{
+                  background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.28) 50%, transparent 65%)',
+                  backgroundSize: '200% 100%',
+                  animationPlayState: 'paused',
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.animationPlayState = 'running')}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.animationPlayState = 'paused')}
+              />
             </div>
-            <span className="font-display font-bold text-2xl tracking-tighter text-white uppercase group-hover:text-gx-green transition-colors">
-              Glory<span className="text-gx-green group-hover:text-white">X</span>
+            <span
+              className="font-display font-bold text-lg tracking-tight transition-colors duration-200 hidden sm:block"
+              style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
+            >
+              Binary<span className="gradient-text">Scouts</span>
             </span>
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={playClick}
-                onMouseEnter={playHover}
-                className="font-display text-lg font-bold uppercase tracking-wider text-white hover:text-gx-green transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-gx-green after:transition-all hover:after:w-full"
-              >
-                {item.label}
-              </Link>
-            ))}
+          {/* ── Desktop Nav Links ─────────────────────────────── */}
+          <div className="hidden md:flex items-center gap-0.5">
+            {NAV_LINKS.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`relative px-4 py-2 rounded-xl font-sans font-medium text-sm transition-all duration-200 group nav-active-dot ${isActive ? 'nav-active' : ''}`}
+                  style={{
+                    color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                    letterSpacing: '-0.01em',
+                  }}
+                  onMouseEnter={(e) => !isActive && (e.currentTarget.style.color = 'var(--text-primary)')}
+                  onMouseLeave={(e) => !isActive && (e.currentTarget.style.color = 'var(--text-secondary)')}
+                >
+                  {item.label}
+                  <span
+                    className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    style={{ background: 'var(--accent-light)' }}
+                  />
+                </Link>
+              );
+            })}
+          </div>
 
-            <Link
-              href="/planner"
-              onClick={playClick}
-              onMouseEnter={playHover}
+          {/* ── Desktop Actions ───────────────────────────────── */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              // suppressHydrationWarning prevents React from complaining about
+              // the title attribute differing between SSR (unknown theme) and
+              // the first client paint (theme resolved from localStorage).
+              suppressHydrationWarning
+              title={mounted ? (isDark ? 'Switch to light' : 'Switch to dark') : 'Toggle theme'}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+              style={{
+                color: 'var(--text-muted)',
+                border: '1px solid var(--glass-border-1)',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.color = 'var(--accent)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'var(--glass-border-2)';
+                (e.currentTarget as HTMLElement).style.background = 'var(--accent-light)';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'var(--glass-border-1)';
+                (e.currentTarget as HTMLElement).style.background = 'transparent';
+              }}
             >
-              <button className="bg-gx-blue hover:bg-gx-orange text-white font-display font-bold uppercase tracking-wide px-6 py-2 border border-white/20 hover:border-white transition-all transform hover:-translate-y-1 shadow-[4px_4px_0px_rgba(255,255,255,0.1)] hover:shadow-[4px_4px_0px_rgba(255,255,255,0.3)] clip-corner">
-                Start Heist
+              {/* Render neutral icon on server; correct icon after mount */}
+              {!mounted ? <Moon size={15} /> : isDark ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+
+            {/* Settings */}
+            <button
+              onClick={() => setSettingsOpen((p) => !p)}
+              title="Settings"
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+              style={{
+                color: settingsOpen ? 'var(--accent)' : 'var(--text-muted)',
+                border: '1px solid',
+                borderColor: settingsOpen ? 'var(--glass-border-3)' : 'var(--glass-border-1)',
+                background: settingsOpen ? 'var(--accent-light)' : 'transparent',
+              }}
+            >
+              <Settings size={15} />
+            </button>
+
+            {/* Primary CTA */}
+            <Link href="/planner">
+              <button className="btn-primary text-sm px-5 py-2.5 gap-1.5">
+                <Sparkles size={13} />
+                Book a Call
               </button>
             </Link>
-
-            {/* Audio Toggle */}
-            <button
-              onClick={handleMuteClick}
-              onMouseEnter={playHover}
-              title={isMuted ? "Enable Sound Context" : "Mute Sound Context"}
-              className="p-2 text-white hover:text-gx-green transition-colors duration-200"
-            >
-              {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} className="animate-pulse" />}
-            </button>
-
-            {/* Settings System Config Toggle */}
-            <button
-              onClick={() => {
-                playClick();
-                setIsSettingsOpen(true);
-              }}
-              onMouseEnter={playHover}
-              title="System Configurations"
-              className="p-2 text-white hover:text-gx-green transition-colors hover:rotate-90 duration-500 cursor-pointer"
-            >
-              <Settings size={24} />
-            </button>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center gap-4">
+          {/* ── Mobile Trigger ────────────────────────────────── */}
+          <div className="md:hidden flex items-center gap-1.5">
             <button
-              onClick={handleMuteClick}
-              className="text-white hover:text-gx-green p-2"
+              onClick={toggleTheme}
+              suppressHydrationWarning
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ color: 'var(--text-muted)' }}
             >
-              {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+              {!mounted ? <Moon size={16} /> : isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button
-              onClick={() => {
-                playClick();
-                setIsSettingsOpen(true);
-              }}
-              className="text-white hover:text-gx-green p-2"
+              onClick={() => setIsOpen(!isOpen)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ color: 'var(--text-primary)', background: isOpen ? 'var(--accent-light)' : 'transparent' }}
             >
-              <Settings size={24} />
-            </button>
-            <button
-              onClick={() => {
-                playClick();
-                setIsOpen(!isOpen);
-              }}
-              className="text-white hover:text-gx-green p-2 focus:outline-none"
-            >
-              {isOpen ? <X size={32} /> : <Menu size={32} />}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isOpen ? 'close' : 'open'}
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {isOpen ? <X size={20} /> : <Menu size={20} />}
+                </motion.div>
+              </AnimatePresence>
             </button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.nav>
 
-      {/* Mobile Menu Panel */}
-      <div
-        className={`md:hidden fixed inset-0 top-20 bg-gx-black z-40 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
-      >
-        <div className="px-4 pt-8 pb-3 space-y-4 flex flex-col h-full bg-grid-pattern bg-[length:20px_20px]">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              onClick={() => {
-                playClick();
-                setIsOpen(false);
-              }}
-              className="font-display text-4xl font-bold uppercase text-white hover:text-gx-green block border-b border-white/10 pb-4"
-            >
-              {item.label}
-            </Link>
-          ))}
-          <Link
-            href="/planner"
-            onClick={() => {
-              playClick();
-              setIsOpen(false);
+      {/* ── Cinematic Mobile Menu ─────────────────────────────── */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="md:hidden fixed inset-0 z-40 flex flex-col"
+            style={{
+              background: 'var(--bg-glass-solid)',
+              backdropFilter: 'blur(32px)',
+              WebkitBackdropFilter: 'blur(32px)',
+              paddingTop: 'calc(var(--navbar-top, 12px) + 64px)',
             }}
-            className="block w-full mt-8"
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(32px)' }}
+            exit={{ opacity: 0, transition: { duration: 0.22 } }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            <button className="w-full bg-gx-green text-gx-black font-display font-bold text-xl uppercase py-4 hover:bg-white transition-colors">
-              Start Heist
-            </button>
-          </Link>
-        </div>
-      </div>
-      {/* Settings Drawer Panel */}
-      <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-    </nav>
+            {/* Atmospheric mini-orb inside menu */}
+            <div
+              className="absolute top-1/4 right-0 w-64 h-64 rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, var(--orb-rose) 0%, transparent 65%)',
+                filter: 'blur(50px)',
+                opacity: 0.6,
+                animation: 'atmosphericFloat 10s ease-in-out infinite',
+              }}
+            />
+            <div
+              className="absolute bottom-1/4 left-0 w-48 h-48 rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, var(--orb-violet) 0%, transparent 65%)',
+                filter: 'blur(50px)',
+                opacity: 0.4,
+                animation: 'atmosphericFloat 14s ease-in-out infinite reverse',
+              }}
+            />
+
+            {/* Nav links — staggered reveal */}
+            <div className="relative z-10 flex flex-col px-6 pt-4 pb-8 flex-1">
+              <div className="flex flex-col gap-1 mb-auto">
+                {NAV_LINKS.map((item, i) => {
+                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                  return (
+                    <motion.div
+                      key={item.label}
+                      initial={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
+                      animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, x: -12, filter: 'blur(2px)' }}
+                      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay: 0.05 + i * 0.07 }}
+                      className="relative"
+                    >
+                      {/* Active left-side indicator */}
+                      {isActive && (
+                        <motion.div
+                          layoutId="mobile-active-indicator"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 rounded-full"
+                          style={{ background: 'var(--gradient-primary)' }}
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <Link
+                        href={item.href}
+                        onClick={closeMenu}
+                        className="flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-200"
+                        style={{
+                          color: isActive ? 'var(--accent)' : 'var(--text-primary)',
+                          background: isActive ? 'var(--accent-light)' : 'transparent',
+                        }}
+                      >
+                        <span
+                          className="font-display font-bold text-2xl"
+                          style={{ letterSpacing: '-0.03em' }}
+                        >
+                          {item.label}
+                        </span>
+                        {isActive && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-2 h-2 rounded-full"
+                            style={{ background: 'var(--accent)' }}
+                          />
+                        )}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Bottom CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
+                className="mt-8 space-y-3"
+              >
+                <div className="h-px" style={{ background: 'var(--glass-border-1)' }} />
+                <Link href="/planner" onClick={closeMenu} className="block">
+                  <button className="btn-primary w-full justify-center gap-2 py-4 text-base">
+                    <Sparkles size={16} />
+                    Start the Conversation
+                  </button>
+                </Link>
+                <p
+                  className="text-center font-sans text-[11px]"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  30-minute call · No pitch · No commitment
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Settings Drawer */}
+      <SettingsDrawer
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onTerminalOpen={() => {}}
+      />
+    </>
   );
 };
 

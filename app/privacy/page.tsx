@@ -7,7 +7,7 @@ const PRIVACY_SECTIONS = [
   {
     title: 'DATA VAULT COMS INTEGRITY',
     paragraphs: [
-      'GloryX Digital Agency prioritizes client records security. All details submitted via the Heist Planner or contact forms are logged within locally-stored JSON files inside the Rust Axum Gateway ("vault/"). We do not sell, rent, or lease your strategic operator details to third-party tracking conglomerates.',
+      'BinaryScouts Digital Agency prioritizes client records security. All details submitted via the Heist Planner or contact forms are logged within locally-stored JSON files inside the Rust Axum Gateway ("vault/"). We do not sell, rent, or lease your strategic operator details to third-party tracking conglomerates.',
       'Data logs committed to the local vault are retained solely for project assessment, strategy compiling, and direct secure transmission follow-ups.'
     ]
   },

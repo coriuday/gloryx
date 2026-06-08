@@ -2,69 +2,981 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════
+   CINEMATIC LIGHT THEME — Warm Pastel Luxury
+   Inspired by: dreamy editorial glass, atmospheric depth
+═══════════════════════════════════════════════════════════ */
+:root,
+[data-theme="light"] {
+  /* ── Canvas & Backgrounds ─────────────────────────────── */
+  --bg-canvas:         #FDFCF9;
+  --bg-primary:        #FAF8F5;
+  --bg-secondary:      #F5F0FF;
+  --bg-tertiary:       #EDE5FF;
+  --bg-elevated:       rgba(255, 255, 255, 0.90);
+
+  /* ── Glass Tiers (3-tier system) ─────────────────────── */
+  --glass-1:           rgba(255, 255, 255, 0.42);
+  --glass-2:           rgba(255, 255, 255, 0.72);
+  --glass-3:           rgba(255, 255, 255, 0.94);
+  --glass-border-1:    rgba(139, 92, 246, 0.10);
+  --glass-border-2:    rgba(139, 92, 246, 0.18);
+  --glass-border-3:    rgba(139, 92, 246, 0.30);
+  --glass-inner-light: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(139, 92, 246, 0.05);
+  --glass-inner:       inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+  /* Backward compat */
+  --bg-glass:          rgba(255, 255, 255, 0.72);
+  --bg-glass-solid:    rgba(253, 252, 249, 0.98);
+
+  /* ── Borders ──────────────────────────────────────────── */
+  --border-subtle:     rgba(139, 92, 246, 0.07);
+  --border-default:    rgba(139, 92, 246, 0.15);
+  --border-strong:     rgba(139, 92, 246, 0.32);
+
+  /* ── Text ─────────────────────────────────────────────── */
+  --text-primary:      #1C1A2E;
+  --text-secondary:    #5B5780;
+  --text-muted:        #9E9ABF;
+  --text-inverse:      #FFFFFF;
+
+  /* ── Accent — Warm Violet ─────────────────────────────── */
+  --accent:            #8B5CF6;
+  --accent-dark:       #7C3AED;
+  --accent-light:      rgba(139, 92, 246, 0.09);
+  --accent-glow:       rgba(139, 92, 246, 0.22);
+
+  /* ── Rose (secondary accent) ──────────────────────────── */
+  --rose:              #EC4899;
+  --rose-soft:         #F472B6;
+  --rose-light:        rgba(244, 114, 182, 0.09);
+  --rose-glow:         rgba(236, 72, 153, 0.18);
+
+  /* ── Sage (tertiary) ──────────────────────────────────── */
+  --sage:              #10B981;
+  --sage-soft:         #6EE7B7;
+  --sage-light:        rgba(110, 231, 183, 0.12);
+
+  /* Backward compat mapping */
+  --cyan:              #EC4899;
+  --cyan-light:        rgba(244, 114, 182, 0.09);
+
+  /* ── Shadows — Dreamy & Warm ──────────────────────────── */
+  --shadow-glass:      0 8px 40px rgba(139, 92, 246, 0.07), var(--glass-inner);
+  --shadow-card:       0 4px 32px rgba(28, 26, 46, 0.05), 0 1px 4px rgba(28, 26, 46, 0.04);
+  --shadow-card-hover: 0 24px 80px rgba(139, 92, 246, 0.14), 0 8px 24px rgba(28, 26, 46, 0.07);
+  --shadow-brand:      0 8px 32px rgba(139, 92, 246, 0.26);
+  --shadow-glow:       0 0 56px rgba(139, 92, 246, 0.32);
+  --shadow-rose:       0 8px 32px rgba(236, 72, 153, 0.22);
+
+  /* ── Gradients ────────────────────────────────────────── */
+  --gradient-primary:  linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  --gradient-dreamy:   linear-gradient(135deg, #8B5CF6 0%, #A78BFA 45%, #F9A8D4 100%);
+  --gradient-aurora:   linear-gradient(135deg, #6EE7B7 0%, #8B5CF6 50%, #EC4899 100%);
+  --gradient-violet:   linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+  --gradient-warm-bg:  linear-gradient(160deg, #FAF8F5 0%, #F5F0FF 50%, #FAF8F5 100%);
+
+  /* ── Misc ─────────────────────────────────────────────── */
+  --ticker-bg:         #F3EEFF;
+  --ticker-border:     rgba(139, 92, 246, 0.10);
+  --grid-color:        rgba(139, 92, 246, 0.04);
+  /* Reduced orb opacity in light mode — high opacity orbs on white
+   * backgrounds look like colored smudges rather than atmospheric depth. */
+  --orb-violet:        rgba(139, 92, 246, 0.07);
+  --orb-rose:          rgba(236, 72, 153, 0.06);
+  --orb-sage:          rgba(110, 231, 183, 0.06);
+
+  /* ── Spacing rhythm ───────────────────────────────────── */
+  --section-gap:       5rem;
+  --section-gap-lg:    8rem;
+  --radius-section:    2rem;
+  --radius-card:       1.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CINEMATIC DARK THEME — Deep Indigo Luxury
+═══════════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg-canvas:         #070611;
+  --bg-primary:        #0C0A18;
+  --bg-secondary:      #110E1E;
+  --bg-tertiary:       #181428;
+  --bg-elevated:       rgba(20, 16, 36, 0.92);
+
+  --glass-1:           rgba(14, 11, 28, 0.52);
+  --glass-2:           rgba(20, 16, 40, 0.76);
+  --glass-3:           rgba(28, 22, 52, 0.94);
+  --glass-border-1:    rgba(167, 139, 250, 0.08);
+  --glass-border-2:    rgba(167, 139, 250, 0.16);
+  --glass-border-3:    rgba(167, 139, 250, 0.30);
+  --glass-inner-light: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.20);
+  --glass-inner:       inset 0 1px 0 rgba(255, 255, 255, 0.07);
+
+  --bg-glass:          rgba(20, 16, 40, 0.76);
+  --bg-glass-solid:    rgba(12, 10, 24, 0.98);
+
+  --border-subtle:     rgba(167, 139, 250, 0.08);
+  --border-default:    rgba(167, 139, 250, 0.16);
+  --border-strong:     rgba(167, 139, 250, 0.36);
+
+  --text-primary:      #EDE9FF;
+  --text-secondary:    #9B97C0;
+  --text-muted:        #5B5780;
+  --text-inverse:      #0C0A18;
+
+  --accent:            #A78BFA;
+  --accent-dark:       #8B5CF6;
+  --accent-light:      rgba(167, 139, 250, 0.13);
+  --accent-glow:       rgba(167, 139, 250, 0.28);
+
+  --rose:              #F472B6;
+  --rose-soft:         #F9A8D4;
+  --rose-light:        rgba(244, 114, 182, 0.11);
+  --rose-glow:         rgba(244, 114, 182, 0.18);
+
+  --sage:              #34D399;
+  --sage-soft:         #86EFAC;
+  --sage-light:        rgba(134, 239, 172, 0.11);
+
+  --cyan:              #F472B6;
+  --cyan-light:        rgba(244, 114, 182, 0.11);
+
+  --shadow-glass:      0 8px 40px rgba(0, 0, 0, 0.55), var(--glass-inner);
+  --shadow-card:       0 4px 32px rgba(0, 0, 0, 0.38);
+  --shadow-card-hover: 0 24px 80px rgba(0, 0, 0, 0.60), 0 0 40px rgba(167, 139, 250, 0.12);
+  --shadow-brand:      0 8px 32px rgba(167, 139, 250, 0.32);
+  --shadow-glow:       0 0 56px rgba(167, 139, 250, 0.42);
+  --shadow-rose:       0 8px 32px rgba(244, 114, 182, 0.18);
+
+  --gradient-primary:  linear-gradient(135deg, #A78BFA 0%, #F472B6 100%);
+  --gradient-dreamy:   linear-gradient(135deg, #7C3AED 0%, #A78BFA 45%, #F9A8D4 100%);
+  --gradient-aurora:   linear-gradient(135deg, #86EFAC 0%, #A78BFA 50%, #F472B6 100%);
+  --gradient-violet:   linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+  --gradient-warm-bg:  linear-gradient(160deg, #0C0A18 0%, #110E1E 50%, #0C0A18 100%);
+
+  --ticker-bg:         #110E1E;
+  --ticker-border:     rgba(167, 139, 250, 0.11);
+  --grid-color:        rgba(167, 139, 250, 0.05);
+  --orb-violet:        rgba(167, 139, 250, 0.14);
+  --orb-rose:          rgba(244, 114, 182, 0.10);
+  --orb-sage:          rgba(134, 239, 172, 0.08);
+
+  /* ── Spacing rhythm ───────────────────────────────────── */
+  --section-gap:       5rem;
+  --section-gap-lg:    8rem;
+  --radius-section:    2rem;
+  --radius-card:       1.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BASE RESET
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Navbar top offset: 12px on mobile (no ticker), 40px on md+ (ticker = 32px) */
 :root {
-  --gx-black: #0a0a0a;
-  --gx-green: #79c043;
-  --gx-green-rgb: 121, 192, 67;
-  --gx-orange: #f58220;
-  --gx-orange-rgb: 245, 130, 32;
-  --gx-blue: #0f2b5c;
-  --gx-blue-rgb: 15, 43, 92;
-  --gx-gray: #2a2a2a;
+  --navbar-top: 12px;
+}
+@media (min-width: 768px) {
+  :root {
+    --navbar-top: 40px;
+  }
+}
+
+/* Apply base bg to html as well — prevents a white flash before
+ * body background-color resolves. Critical for cold-cache loads. */
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
 }
 
 body {
-  background-color: var(--gx-black);
-  color: #ffffff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  /* Note: transition removed — theme switches via data-theme attribute change
+   * which the browser handles without a full-page repaint. The old
+   * background-color transition caused an expensive full-page repaint
+   * on every theme toggle. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* Custom Scrollbar for that gritty feel */
-::-webkit-scrollbar {
-  width: 10px;
+/* ═══════════════════════════════════════════════════════════
+   SELECTION
+═══════════════════════════════════════════════════════════ */
+::selection {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: var(--accent);
 }
 
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR — Minimal, Elegant
+═══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar              { width: 4px; height: 4px; }
+::-webkit-scrollbar-track        { background: transparent; }
+::-webkit-scrollbar-thumb        { background: var(--border-default); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover  { background: var(--accent); }
+
+/* ═══════════════════════════════════════════════════════════
+   ATMOSPHERIC BACKGROUND SYSTEM
+   Soft orb-based environment (no hard grids)
+═══════════════════════════════════════════════════════════ */
+.atmo-bg {
+  position: relative;
+  isolation: isolate;
+}
+.atmo-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, var(--orb-violet) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, var(--orb-rose) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 60% 50%, var(--orb-sage) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border: 1px solid #0a0a0a;
+/* ═══════════════════════════════════════════════════════════
+   GLASS CARD SYSTEM — 3-Tier Hierarchy
+═══════════════════════════════════════════════════════════ */
+
+/* Tier 1 — Background panel: thick blur, very translucent */
+.glass-panel {
+  background: var(--glass-1);
+  /* Reduced from blur(60px) — perceptually identical at viewing distance,
+   * but ~30% cheaper GPU composite pass. saturate reduced from 200% to 160%. */
+  backdrop-filter: blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+  border: 1.5px solid var(--glass-border-1);
+  box-shadow: var(--shadow-glass);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gx-green);
+/* Tier 2 — Cards: standard interaction surface */
+.glass-card {
+  background: var(--glass-2);
+  /* Reduced from blur(24px) — same perceptual quality, lower GPU cost */
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1.5px solid var(--glass-border-2);
+  box-shadow: var(--shadow-card), var(--glass-inner);
+  transition: box-shadow 0.4s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.4s ease,
+              transform 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.glass-card:hover {
+  border-color: var(--glass-border-3);
+  /* box-shadow is GPU-compositable. filter:drop-shadow is NOT — it triggers
+   * a full repaint on every hover. Use box-shadow for performance safety. */
+  box-shadow: var(--shadow-card-hover), var(--glass-inner);
+  transform: translateY(-3px);
 }
 
-/* Hide default cursor on desktop when custom cursor is active */
-@media (min-width: 768px) {
-  .has-custom-cursor, .has-custom-cursor * {
-    cursor: none !important;
+/* Tier 2 — Interactive (performance-safe hover, cursor-pointer) */
+.glass-card-interactive {
+  background: var(--glass-2);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1.5px solid var(--glass-border-2);
+  box-shadow: var(--shadow-card), var(--glass-inner);
+  will-change: transform;
+  cursor: pointer;
+  transition: box-shadow 0.35s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.35s ease,
+              transform 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.glass-card-interactive:hover {
+  border-color: var(--glass-border-3);
+  box-shadow: var(--shadow-card-hover), var(--glass-inner);
+  transform: translateY(-3px);
+  /* Removed filter: drop-shadow — non-compositable, causes repaint */
+}
+
+/* Tier 2 — Accent border on hover (gradient border variant) */
+.glass-card-accent {
+  background: var(--glass-2);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1.5px solid var(--glass-border-2);
+  box-shadow: var(--shadow-card), var(--glass-inner);
+  position: relative;
+  transition: box-shadow 0.35s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.35s ease,
+              transform 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.glass-card-accent::after {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  background: var(--gradient-dreamy);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.glass-card-accent:hover::after { opacity: 0.5; }
+.glass-card-accent:hover {
+  border-color: transparent;
+  box-shadow: var(--shadow-card-hover), var(--glass-inner);
+  transform: translateY(-3px);
+}
+
+/* Tier 2 — Static (no hover transform) */
+.glass-card-static {
+  background: var(--glass-2);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1.5px solid var(--glass-border-2);
+  box-shadow: var(--shadow-card), var(--glass-inner);
+}
+
+/* Tier 3 — Chips / badges: nearly opaque */
+.glass-chip {
+  background: var(--glass-3);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border: 1px solid var(--glass-border-2);
+  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.08), var(--glass-inner);
+}
+
+/* ── Mobile blur reduction — GPU budget on mobile is limited ─────── */
+@media (max-width: 768px) {
+  .glass-panel {
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+  .glass-card,
+  .glass-card-interactive,
+  .glass-card-accent,
+  .glass-card-static {
+    backdrop-filter: blur(10px) saturate(130%);
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+  }
+  .glass-chip {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 }
 
-/* Clip corner utilities */
-.clip-corner {
-  clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%);
+/* ── Reduced motion — bypass backdrop-filter entirely ───────────── */
+@media (prefers-reduced-motion: reduce) {
+  .glass-panel,
+  .glass-card,
+  .glass-card-interactive,
+  .glass-card-accent,
+  .glass-card-static,
+  .glass-chip {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
-.clip-corner-rev {
-  clip-path: polygon(5% 0, 100% 0, 100% 100%, 0 100%, 0 15%);
+/* ═══════════════════════════════════════════════════════════
+   GRADIENT TEXT SYSTEM
+═══════════════════════════════════════════════════════════ */
+.gradient-text {
+  background: var(--gradient-dreamy);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  /* Pause the animation by default — it runs a GPU background-position
+   * recomposite every frame for the full 6s cycle across ALL gradient
+   * text instances simultaneously. Resume only when needed. */
+  animation: dreamyGradient 6s ease-in-out infinite;
+  animation-play-state: paused;
 }
 
-/* CRT Screen Effects */
-.crt-screen {
+/* Opt-in: explicitly animated gradient text (hero headline, section headers) */
+.gradient-text-animated {
+  animation-play-state: running;
+}
+
+.gradient-text-static {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-bg {
+  background: var(--gradient-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GRADIENT BORDER — Prismatic Edges
+═══════════════════════════════════════════════════════════ */
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: var(--gradient-dreamy);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SHIMMER SWEEP — Premium Hover Effect
+═══════════════════════════════════════════════════════════ */
+.shimmer-sweep {
   position: relative;
   overflow: hidden;
 }
+.shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%);
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.shimmer-sweep:hover::after {
+  opacity: 1;
+  animation: shimmerSweep 0.55s ease-out forwards;
+}
 
+/* ═══════════════════════════════════════════════════════════
+   ATMOSPHERIC ORB SYSTEM
+═══════════════════════════════════════════════════════════ */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.orb-violet {
+  background: radial-gradient(circle, var(--orb-violet) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: atmosphericFloat 12s ease-in-out infinite;
+}
+.orb-rose {
+  background: radial-gradient(circle, var(--orb-rose) 0%, transparent 70%);
+  filter: blur(70px);
+  animation: atmosphericFloat 15s ease-in-out infinite reverse;
+}
+.orb-sage {
+  background: radial-gradient(circle, var(--orb-sage) 0%, transparent 70%);
+  filter: blur(90px);
+  animation: atmosphericFloat 18s ease-in-out infinite;
+}
 
+/* ═══════════════════════════════════════════════════════════
+   CUSTOM CURSOR
+═══════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+  .has-custom-cursor,
+  .has-custom-cursor * { cursor: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTON SYSTEM — Cinematic Premium Buttons
+═══════════════════════════════════════════════════════════ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8125rem 1.875rem;
+  background: var(--gradient-primary);
+  background-size: 200% 200%;
+  color: #fff;
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border-radius: 100px;
+  border: none;
+  box-shadow: var(--shadow-brand);
+  transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: -0.01em;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%);
+  transform: translateX(-100%);
+  transition: transform 0.55s ease;
+}
+.btn-primary:hover::before { transform: translateX(100%); }
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-glow);
+}
+.btn-primary:active { transform: translateY(-1px) scale(1.00); }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8125rem 1.875rem;
+  background: var(--glass-2);
+  color: var(--text-primary);
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border-radius: 100px;
+  border: 1.5px solid var(--glass-border-2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--glass-inner);
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+}
+.btn-secondary:hover {
+  background: var(--accent-light);
+  border-color: var(--glass-border-3);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: var(--shadow-brand), var(--glass-inner);
+}
+.btn-secondary:active { transform: translateY(-1px); }
+
+/* ═══════════════════════════════════════════════════════════
+   EYEBROW BADGE — Cinematic Section Labels
+═══════════════════════════════════════════════════════════ */
+.eyebrow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 1rem;
+  border-radius: 100px;
+  background: var(--accent-light);
+  border: 1px solid var(--glass-border-2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  backdrop-filter: blur(8px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION ARCHITECTURE
+═══════════════════════════════════════════════════════════ */
+.section-reveal {
+  perspective: 1200px;
+}
+
+.tilt-card-inner {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Card spotlight effect (JS-driven) */
+.card-spotlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    circle 220px at var(--spotlight-x, 50%) var(--spotlight-y, 50%),
+    rgba(139,92,246,0.09) 0%,
+    transparent 70%
+  );
+  contain: paint;
+}
+.glass-card:hover .card-spotlight,
+.glass-card-interactive:hover .card-spotlight { opacity: 1; }
+
+/* GPU-isolated atmospheric orb base */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform, opacity;
+  /* contain:paint creates a paint isolation boundary — the browser
+   * knows this element cannot visually affect anything outside its
+   * bounds, preventing expensive ancestor repaints. */
+  contain: paint;
+  /* Promote to own compositor layer to avoid ancestor repaints */
+  transform: translateZ(0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FORM ELEMENTS — Premium Input System
+═══════════════════════════════════════════════════════════ */
+.input-cinematic {
+  width: 100%;
+  padding: 0.9375rem 1.25rem;
+  background: var(--glass-2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--glass-border-2);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  outline: none;
+  box-shadow: var(--glass-inner);
+}
+.input-cinematic::placeholder { color: var(--text-muted); }
+.input-cinematic:focus {
+  border-color: var(--glass-border-3);
+  box-shadow: 0 0 0 4px var(--accent-light), var(--glass-inner);
+}
+
+/* Styled select — custom arrow, matches input-cinematic */
+.select-cinematic {
+  width: 100%;
+  padding: 0.9375rem 3rem 0.9375rem 1.25rem;
+  background: var(--glass-2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--glass-border-2);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  outline: none;
+  box-shadow: var(--glass-inner);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239E9ABF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  cursor: pointer;
+}
+.select-cinematic:focus {
+  border-color: var(--glass-border-3);
+  box-shadow: 0 0 0 4px var(--accent-light), var(--glass-inner);
+}
+.select-cinematic option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   KEYFRAMES — CINEMATIC ANIMATION LIBRARY
+═══════════════════════════════════════════════════════════ */
+
+/* Dreamy gradient flow for gradient-text */
+@keyframes dreamyGradient {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+/* Atmospheric floating orbs — translate3d only for GPU compositing.
+ * Removed scale() which forced compositor layer re-promotion on each
+ * keyframe. translate3d is purely compositable with zero repaint cost. */
+@keyframes atmosphericFloat {
+  0%   { transform: translate3d(0, 0, 0); }
+  25%  { transform: translate3d(3%, -4%, 0); }
+  50%  { transform: translate3d(-2%, 3%, 0); }
+  75%  { transform: translate3d(4%, 1%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* Slow gentle float for hero elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-14px); }
+}
+
+/* Very slow, multi-axis float for cards */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-8px) rotate(0.8deg); }
+  66%       { transform: translateY(-4px) rotate(-0.5deg); }
+}
+
+/* Float variant with slight drift */
+@keyframes floatDrift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  40%       { transform: translate(4px, -10px) rotate(1deg); }
+  70%       { transform: translate(-2px, -6px) rotate(-0.5deg); }
+}
+
+/* Shimmer sweep for buttons */
+@keyframes shimmerSweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* Content reveal — cinematic upward blur dissolve */
+@keyframes dreamyReveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0px);
+  }
+}
+
+/* Fade up (legacy compat) */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Simple fade */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Slide in from left */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Soft atmospheric pulse
+ * PERFORMANCE: Removed transform:scale() — scale forces GPU layer re-promotion
+ * on each keyframe, triggering expensive compositing. Opacity is purely
+ * compositable (zero repaint cost). Identical visual effect. */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 0.85; }
+}
+
+/* Soft pulsing glow for accents */
+@keyframes softPulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1.0; }
+}
+
+/* Orbit paths for orbs */
+@keyframes orbitA {
+  0%   { transform: translate3d(0, 0, 0); }
+  33%  { transform: translate3d(5%, -6%, 0); }
+  66%  { transform: translate3d(-3%, 4%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes orbitB {
+  0%   { transform: translate3d(0, 0, 0); }
+  33%  { transform: translate3d(-6%, 4%, 0); }
+  66%  { transform: translate3d(4%, -5%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* Blink cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Count up (for counters) */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress fill */
+@keyframes progressIn {
+  from { width: 0%; }
+}
+
+/* Chip float */
+@keyframes chipFloat {
+  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+  50%       { transform: translateY(-8px) rotate(0.5deg); }
+}
+
+/* Iris wipe for intro loader */
+@keyframes irisOpen {
+  from { clip-path: circle(0% at 50% 50%); opacity: 0; }
+  to   { clip-path: circle(150% at 50% 50%); opacity: 1; }
+}
+
+/* Stagger reveal clip */
+@keyframes clipReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+
+/* Spin slow for loader ring */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+/* Shimmer (legacy) */
+@keyframes shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position:  1000px 0; }
+}
+
+/* Bar grow for charts */
+@keyframes barGrow {
+  from { height: 0%; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY LAYER
+═══════════════════════════════════════════════════════════ */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-balance       { text-wrap: balance; }
+
+  /* Dreamy reveal — cinematic entrance */
+  .animate-dreamy-reveal { animation: dreamyReveal 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+
+  /* Legacy compat */
+  .animate-fade-up    { animation: fadeUp  0.6s ease-out both; }
+  .animate-fade-in    { animation: fadeIn  0.4s ease-out both; }
+  .animate-slide-in   { animation: slideIn 0.5s ease-out both; }
+  .animate-float      { animation: float 7s ease-in-out infinite; }
+  .animate-float-slow { animation: floatSlow 9s ease-in-out infinite; }
+  .animate-spin-slow  { animation: spin-slow 10s linear infinite; }
+  .animate-glow-pulse { animation: glowPulse 4s ease-in-out infinite; }
+  .animate-soft-pulse { animation: softPulse 3s ease-in-out infinite; }
+  .animate-blink      { animation: blink 1.2s ease-in-out infinite; }
+
+  /* GPU optimization */
+  .gpu               { transform: translateZ(0); will-change: transform; }
+  .preserve-3d       { transform-style: preserve-3d; }
+  .perspective-800   { perspective: 800px; }
+  .perspective-1000  { perspective: 1000px; }
+  .perspective-1200  { perspective: 1200px; }
+  .backface-hidden   { backface-visibility: hidden; }
+
+  /* Clip reveal utility */
+  .clip-reveal       { animation: clipReveal 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+
+  /* Backdrop blur tiers */
+  .backdrop-blur-glass-1 {
+    backdrop-filter: blur(60px) saturate(200%);
+    -webkit-backdrop-filter: blur(60px) saturate(200%);
+  }
+  .backdrop-blur-glass-2 {
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+  .backdrop-blur-glass-3 {
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
   }
 
-  .bg-grid-pattern {
-    background-size: 40px 40px;
+  /* Active nav indicator */
+  .nav-active {
+    color: var(--accent) !important;
+    background: var(--accent-light) !important;
   }
-}
+  .nav-active-dot::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCESSIBILITY — Reduced Motion
+   Pauses all CSS animations/transitions for users who
+   prefer reduced motion. Framer Motion reads this via
+   useReducedMotion() hook.
+═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TRACK 10 — FOCUS RINGS
+   Keyboard navigation accessibility.
+   :focus-visible only triggers on keyboard focus (not mouse click),
+   so it does not interfere with the cinematic mouse-driven design.
+═══════════════════════════════════════════════════════════ */
+
+/* Default focus ring — all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Enhanced ring for buttons */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px var(--accent-light);
+}
+
+/* Rounded ring for links */
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Input focus — handled by input-cinematic, no additional ring needed */
+.input-cinematic:focus-visible,
+.select-cinematic:focus-visible {
+  outline: none; /* Already has a box-shadow focus indicator */
+}
+
+/* Skip to content — screen reader / keyboard utility link */
+.skip-to-content {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  z-index: 99999;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 0 0 12px 12px;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TRACK 9 — CONTENT VISIBILITY
+   Below-fold sections skip rendering until scroll proximity.
+   The browser uses contain-intrinsic-size as a layout placeholder
+   so scroll height calculations remain correct.
+
+   Apply .section-lazy to all sections below the first viewport.
+   Do NOT apply to Hero, Navbar, or anything above the fold.
+═══════════════════════════════════════════════════════════ */
+.section-lazy {
+  content-visibility: auto;
+  /* Placeholder height estimate — prevents layout shift on scroll.
+   * Over-estimate is fine (section just appears slightly earlier).
+   * Under-estimate causes layout shift. 600px is a safe minimum. */
+  contain-intrinsic-size: 0 600px;
+}
+
+/* Layout containment for orb containers — prevents orb animations
+ * from triggering ancestor repaints. */
+.orb-container {
+  contain: layout paint;
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+}

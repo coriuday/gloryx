@@ -4,8 +4,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Forward to Rust API Gateway on port 8080
-    const rustUrl = 'http://127.0.0.1:8080/api/heist';
+    // Forward to Rust API Gateway on port 8081
+    const rustUrl = 'http://127.0.0.1:8081/api/heist';
 
     const response = await fetch(rustUrl, {
       method: 'POST',

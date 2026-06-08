@@ -1,786 +1,555 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { useAudio } from '@/components/hooks/AudioProvider';
-import { Target, Cpu, User, Play, AlertCircle, ArrowLeft, ArrowRight, Printer, CheckCircle } from 'lucide-react';
+import { Cpu, GitMerge, TrendingUp, BarChart3, Server, Layers, ArrowLeft, ArrowRight, CheckCircle, AlertCircle, Download, CalendarCheck, Sparkles } from 'lucide-react';
 
-interface PlannerService {
+// ── Types ────────────────────────────────────────────────
+interface Solution {
   id: string;
+  icon: React.ElementType;
   name: string;
-  minPrice: number;
   description: string;
-  accent: 'green' | 'orange' | 'blue';
 }
 
-const PLANNER_SERVICES: PlannerService[] = [
-  { id: 'development', name: 'Full Stack Development', minPrice: 12000, description: 'Building clean, compiled, high-performance systems and interactive layouts.', accent: 'blue' },
-  { id: 'marketing', name: 'Digital Marketing Campaign', minPrice: 5000, description: 'Aggressive data-backed user acquisition and scaling.', accent: 'green' },
-  { id: 'automation', name: 'Lead Flow Automation (CRM)', minPrice: 8000, description: 'Integrate CRM automation, auto-comms and WhatsApp flows.', accent: 'orange' },
-  { id: 'seo', name: 'SEO Engine Conquest', minPrice: 3000, description: 'Aggressive ranking and competitor traffic displacement.', accent: 'blue' },
-  { id: 'video', name: 'Cinematic Video Production', minPrice: 7000, description: 'High-production motion graphics and video storytelling.', accent: 'green' },
-  { id: 'outreach', name: 'LinkedIn / B2B Autopilot', minPrice: 4000, description: 'B2B lead generation and outreach sequences on autopilot.', accent: 'orange' }
+interface ContactInfo {
+  name: string;
+  company: string;
+  email: string;
+  website: string;
+  brief: string;
+}
+
+interface BlueprintResult {
+  projectRef: string;
+  status: string;
+  blueprint: string;
+}
+
+// ── Data ─────────────────────────────────────────────────
+const SOLUTIONS: Solution[] = [
+  { id: 'ai-systems',     icon: Cpu,        name: 'AI Systems',             description: 'Custom AI pipelines, agents, and model integrations.' },
+  { id: 'saas-dev',       icon: Layers,     name: 'SaaS Development',       description: 'Full-stack web platforms engineered for scale.' },
+  { id: 'crm',            icon: GitMerge,   name: 'CRM Automation',         description: 'Intelligent lead workflows and WhatsApp automation.' },
+  { id: 'growth',         icon: TrendingUp, name: 'Growth Engineering',     description: 'SEO, acquisition systems, and conversion optimization.' },
+  { id: 'dashboards',     icon: BarChart3,  name: 'Enterprise Dashboards',  description: 'Real-time analytics and business intelligence platforms.' },
+  { id: 'infrastructure', icon: Server,     name: 'Infrastructure & DevOps',description: 'Cloud architecture, CI/CD, and API gateway engineering.' },
 ];
 
+const TIMELINES = ['1 Month', '2 Months', '3 Months', '6 Months', 'Ongoing'];
+const BUDGETS  = [
+  { label: '$5K – $10K',  value: 7500 },
+  { label: '$10K – $25K', value: 17500 },
+  { label: '$25K – $50K', value: 37500 },
+  { label: '$50K+',       value: 75000 },
+];
+
+const STEPS = [
+  { num: 1, label: 'Solutions' },
+  { num: 2, label: 'Parameters' },
+  { num: 3, label: 'Your Info' },
+];
+
+// ── Main Component ────────────────────────────────────────
 export default function PlannerPage() {
-  const { playClick, playHover, playSuccess, playError } = useAudio();
   const [step, setStep] = useState(1);
-  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
-  const [budget, setBudget] = useState(15000);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [budget, setBudget] = useState<number | null>(null);
   const [timeline, setTimeline] = useState('3 Months');
-  const [intel, setIntel] = useState({
-    codeName: '',
-    corporation: '',
-    email: '',
-    channel: '',
-    brief: ''
+  const [contact, setContact] = useState<ContactInfo>({
+    name: '', company: '', email: '', website: '', brief: ''
   });
-  const [isCompiling, setIsCompiling] = useState(false);
-  const [compileProgress, setCompileProgress] = useState(0);
-  const [showDossier, setShowDossier] = useState(false);
-  const [heistResult, setHeistResult] = useState<{ heistCode: string; status: string; blueprint: string } | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<BlueprintResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const submitHeistPlan = async () => {
-    setIsCompiling(true);
-    setCompileProgress(10);
-    setErrorMsg(null);
-    
-    // Start a simulated loading animation up to 85% while API is resolving
-    let progress = 10;
-    const progressInterval = setInterval(() => {
-      if (progress < 85) {
-        progress += Math.floor(Math.random() * 8) + 2;
-        if (progress > 85) progress = 85;
-        setCompileProgress(progress);
-      }
-    }, 200);
+  // ── Validation ─────────────────────────────────────────
+  const step1Valid = selected.length > 0;
+  const step2Valid = budget !== null;
+  const step3Valid = contact.name.trim() && contact.email.trim() && contact.email.includes('@');
 
+  // ── Handlers ───────────────────────────────────────────
+  const toggleSolution = (id: string) => {
+    setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
+  };
+
+  const submitBlueprint = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch('/api/heist', {
+      const res = await fetch('/api/heist', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          codeName: intel.codeName,
-          corporation: intel.corporation || "",
-          email: intel.email,
-          channel: intel.channel || "",
-          brief: intel.brief || "",
-          targets: selectedTargets,
-          budget: budget,
-          timeline: timeline,
+          codeName: contact.name,
+          corporation: contact.company,
+          email: contact.email,
+          channel: contact.website,
+          brief: contact.brief,
+          targets: selected,
+          budget,
+          timeline,
         }),
       });
 
-      clearInterval(progressInterval);
-
-      if (!response.ok) {
-        throw new Error('NETWORK REJECTION: API GATEWAY OFFLINE');
-      }
-
-      const data = await response.json();
-      setHeistResult(data);
-      
-      // Fast forward progress to 100%
-      setCompileProgress(100);
-      setTimeout(() => {
-        setIsCompiling(false);
-        setShowDossier(true);
-        playSuccess();
-      }, 600);
-      
-    } catch (err: any) {
-      clearInterval(progressInterval);
-      console.error(err);
-      setErrorMsg(err.message || 'HEIST COMPILATION FAILURE');
-      // Set heist result to fallback offline data so user isn't stuck
-      setHeistResult({
-        heistCode: `HEIST-FAIL-${Math.floor(Math.random() * 9000 + 1000)}`,
-        status: 'OFFLINE_FALLBACK',
-        blueprint: `CLASSIFIED STRATEGY BLUEPRINT (OFFLINE BACKUP MODEL ACTIVE)\n\n1. TARGET OVERVIEW\nClient corporation '${intel.corporation || "UNKNOWN"}' is requesting a deployment of digital weapons: ${selectedTargets.join(', ').toUpperCase()}.\nOperational scope fits the budget threshold of $${budget.toLocaleString()} and is cleared for tactical implementation.\n\n2. MISSION TIMELINE\n- PHASE I (INTELLIGENCE AUDIT): Deep scan of targets and deployment setup (Days 1-7).\n- PHASE II (DRAFT CODE): Script CRM webhooks and construct marketing campaigns (Days 8-20).\n- PHASE III (DEPLOY SHARDS): Launch landing sites, PPC bid automation, and SEO indexers (Days 21-45).\n- PHASE IV (SECURE LOOT): Calibrate final client conversion paths (Remaining period of ${timeline}).\n\n3. CREW EQUIPMENT\n- Automation: Node.js API bridges and WhatsApp notifications webhooks.\n- SEO: Schema microcode templates and indexing cron listeners.\n- Marketing: Multi-channel PPC custom scripts and audience trackers.\n\n4. EXPECTED LOOT\n- Estimated Lead Processing Time: Reduced from hours to under 120 seconds.\n- Traffic scaling threshold: Target minimum +300% organic lift.\n- Ad budget optimization target: Secure -30% average cost-per-lead reduction.`
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+      setResult({
+        projectRef: data.heistCode || `BS-${Date.now().toString(36).toUpperCase()}`,
+        status: data.status || 'BLUEPRINT READY',
+        blueprint: data.blueprint || 'Your system blueprint is being prepared by our team.',
       });
-      setCompileProgress(100);
-      setTimeout(() => {
-        setIsCompiling(false);
-        setShowDossier(true);
-        playSuccess();
-      }, 600);
+    } catch {
+      setError('Failed to generate your blueprint. Please try again or contact us directly.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Hacking Minigame state variables
-  const [isHacking, setIsHacking] = useState(false);
-  const [hackedCount, setHackedCount] = useState(0);
-  const [activeHackingNode, setActiveHackingNode] = useState(0);
-  const [hackingTimer, setHackingTimer] = useState(15);
-  const [hackLog, setHackLog] = useState<string[]>([]);
-  const hackingNodes = ['A7', 'BC', '09', 'F2', 'D8', 'E6', '3A', 'B5', '7C', 'A1', 'E9', '2B', 'C6', '9E', 'FF', '1A'];
-
-  // Hacking timer countdown loop
-  useEffect(() => {
-    let timerId: NodeJS.Timeout;
-    if (isHacking && hackingTimer > 0) {
-      timerId = setTimeout(() => {
-        setHackingTimer((prev) => prev - 1);
-      }, 1000);
-    } else if (isHacking && hackingTimer === 0) {
-      playError();
-      setHackedCount(0);
-      setHackingTimer(15);
-      setActiveHackingNode(Math.floor(Math.random() * 16));
-      setHackLog((prev) => [
-        ...prev,
-        '[WARN] TRACE ATTEMPT DETECTED. ENCRYPTOR ROTATED SECURE KEYS. RETRY...'
-      ]);
-    }
-    return () => clearTimeout(timerId);
-  }, [isHacking, hackingTimer, playError]);
-
-  const toggleTarget = (id: string) => {
-    playClick();
-    setSelectedTargets((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((t) => t !== id);
-      } else {
-        const updated = [...prev, id];
-        // Auto-scale budget if it is below the minimum required price of selected options
-        const minRequired = updated.reduce((sum, currentId) => {
-          const service = PLANNER_SERVICES.find((s) => s.id === currentId);
-          return sum + (service ? service.minPrice : 0);
-        }, 0);
-        if (budget < minRequired) {
-          setBudget(minRequired + 2000);
-        }
-        return updated;
-      }
-    });
-  };
-
-  const handleNextStep = () => {
-    if (step === 1 && selectedTargets.length === 0) {
-      playError();
-      alert('WARNING: SELECT AT LEAST ONE TARGET TO CONTINUE.');
-      return;
-    }
-    if (step === 3 && (!intel.codeName || !intel.email)) {
-      playError();
-      alert('WARNING: OPERATOR CODE NAME AND SECURE CHANNEL ARE REQUIRED.');
-      return;
-    }
-    playClick();
-    setStep((prev) => prev + 1);
-  };
-
-  const handlePrevStep = () => {
-    playClick();
-    setStep((prev) => prev - 1);
-  };
-
-  // Launch intrusion minigame
-  const executeHeist = () => {
-    playSuccess();
-    setIsHacking(true);
-    setHackedCount(0);
-    setHackingTimer(15);
-    setActiveHackingNode(Math.floor(Math.random() * 16));
-    setHackLog([
-      '[SYSTEM] SECURITY FIREWALL DEPLOYED BY TARGET.',
-      '[SYSTEM] BYPASS 3 SECURITY ENCRYPTION NODES TO OVERRIDE.'
-    ]);
-  };
-
-  // Handle active nodes checking
-  const handleNodeClick = (index: number) => {
-    if (!isHacking) return;
-    
-    if (index === activeHackingNode) {
-      const nextCount = hackedCount + 1;
-      setHackedCount(nextCount);
-      playSuccess();
-      
-      if (nextCount >= 3) {
-        setIsHacking(false);
-        setHackLog([]);
-        submitHeistPlan();
-      } else {
-        let nextNode = Math.floor(Math.random() * 16);
-        while (nextNode === activeHackingNode) {
-          nextNode = Math.floor(Math.random() * 16);
-        }
-        setActiveHackingNode(nextNode);
-        setHackLog((prev) => [
-          ...prev,
-          `[SUCCESS] SECURITY NODE BYPASSED (${nextCount}/3). ROTATING CODES...`
-        ]);
-      }
-    } else {
-      playError();
-      setHackingTimer((prev) => Math.max(0, prev - 3));
-      setHackLog((prev) => [
-        ...prev,
-        `[ALERT] SECURITY THREAT TRACED. SHIELD PENALTY DETECTED (-3 SECONDS).`
-      ]);
-    }
-  };
-
-  // Skip hacking minigame
-  const forceBypass = () => {
-    playSuccess();
-    setIsHacking(false);
-    setHackLog([]);
-    submitHeistPlan();
-  };
-
-  const calculatedMinRequired = selectedTargets.reduce((sum, currentId) => {
-    const service = PLANNER_SERVICES.find((s) => s.id === currentId);
-    return sum + (service ? service.minPrice : 0);
-  }, 0);
-
-  const handlePrint = () => {
-    playClick();
-    window.print();
+  // ── Slide animation ────────────────────────────────────
+  const slideVariants = {
+    enter: (dir: number) => ({ opacity: 0, x: dir * 40 }),
+    center: { opacity: 1, x: 0 },
+    exit: (dir: number) => ({ opacity: 0, x: dir * -40 }),
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.99 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="min-h-screen bg-gx-black text-white font-sans selection:bg-gx-green selection:text-gx-black flex flex-col justify-between"
-    >
-      {/* Glitch sweep animation */}
-      <motion.div
-        initial={{ top: '0%' }}
-        animate={{ top: '100%' }}
-        transition={{ duration: 0.5, ease: 'easeInOut' }}
-        className="fixed left-0 right-0 h-12 bg-gradient-to-b from-transparent via-gx-green/20 to-transparent pointer-events-none z-[100] shadow-[0_0_10px_#79c043]"
-      />
-
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <Navbar />
 
-      <main className="flex-grow pt-32 pb-24 px-4 max-w-5xl mx-auto w-full relative z-10">
-        
-        {/* Background Grids */}
-        <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-[0.03] pointer-events-none z-0" />
+      <main className="pt-32 pb-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
 
-        {/* Retro Intrusion Hacking Minigame */}
-        {isHacking && (
-          <div className="fixed inset-0 bg-gx-black/98 z-[100] flex flex-col items-center justify-center p-6">
-            <div className="border-2 border-gx-orange bg-gx-dark p-6 md:p-10 max-w-md w-full relative clip-corner shadow-[0_0_40px_rgba(245,130,32,0.3)]">
-              
-              {/* Alert Header */}
-              <div className="text-center mb-6">
-                <span className="bg-gx-orange text-gx-black font-mono text-[9px] uppercase tracking-widest px-3 py-1 font-bold">
-                  WARNING: INTRUSION SECURITY FIREWALL ACTIVE
-                </span>
-                <h2 className="font-display font-bold text-3xl md:text-4xl text-white uppercase tracking-tighter mt-3 leading-none">
-                  Firewall Bypass
-                </h2>
-                <p className="text-gray-400 font-mono text-[10px] mt-2 uppercase">
-                  Deactivate 3 Encryption Shards to secure transmission.
-                </p>
-              </div>
+          {/* ── Page header ─────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
+              style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--border-default)' }}
+            >
+              <Sparkles size={14} style={{ color: 'var(--accent)' }} />
+              <span className="font-sans text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--accent)' }}>
+                Free Strategy Session
+              </span>
+            </div>
+            <h1
+              className="font-display font-bold text-4xl md:text-5xl tracking-tight mb-4"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              Strategy <span className="gradient-text">Configurator</span>
+            </h1>
+            <p className="font-sans text-lg" style={{ color: 'var(--text-secondary)' }}>
+              Tell us what you need. We&apos;ll generate a tailored system blueprint for your business — at no cost.
+            </p>
+          </motion.div>
 
-              {/* Hacking Stats Dashboard */}
-              <div className="grid grid-cols-2 gap-4 mb-6 font-mono text-xs">
-                <div className="bg-gx-black border border-gx-gray p-3 flex flex-col justify-center items-center">
-                  <span className="text-gray-500 text-[9px] uppercase tracking-wider mb-1">BYPASS STATUS</span>
-                  <span className="text-sm font-display font-bold text-gx-green">
-                    {hackedCount} / 3 SHARDS
-                  </span>
-                </div>
-                <div className="bg-gx-black border border-gx-gray p-3 flex flex-col justify-center items-center">
-                  <span className="text-gray-500 text-[9px] uppercase tracking-wider mb-1">COOLDOWN TIMER</span>
-                  <span className={`text-sm font-display font-bold ${hackingTimer < 5 ? 'text-red-500 animate-pulse' : 'text-gx-orange'}`}>
-                    {hackingTimer} SECONDS
-                  </span>
-                </div>
-              </div>
-
-              {/* Grid of Nodes */}
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                {hackingNodes.map((node, index) => {
-                  const isActive = index === activeHackingNode;
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => handleNodeClick(index)}
-                      onMouseEnter={playHover}
-                      className={`h-12 border font-mono font-bold uppercase transition-all flex items-center justify-center relative group text-xs ${
-                        isActive
-                          ? 'border-gx-orange bg-gx-orange/15 text-gx-orange animate-pulse shadow-[0_0_10px_rgba(245,130,32,0.4)]'
-                          : 'border-white/10 bg-gx-black/40 hover:border-white/40 text-gray-400'
-                      }`}
+          {/* ── Stepper ─────────────────────────────────── */}
+          {!result && (
+            <div className="flex items-center justify-center gap-3 mb-10">
+              {STEPS.map((s, i) => (
+                <React.Fragment key={s.num}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm transition-all duration-300"
+                      style={{
+                        background: step >= s.num ? 'var(--gradient-primary)' : 'var(--glass-2)',
+                        color: step >= s.num ? '#fff' : 'var(--text-muted)',
+                        border: step === s.num ? '2px solid var(--accent)' : '2px solid var(--glass-border-1)',
+                        boxShadow: step === s.num ? 'var(--shadow-brand)' : 'none',
+                      }}
                     >
-                      {node}
-                      {isActive && (
-                        <span className="absolute inset-0 border border-gx-orange animate-ping pointer-events-none opacity-50" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Intrusion Log Output Buffer */}
-              <div className="bg-gx-black border border-gx-gray p-3 h-28 overflow-y-auto mb-6 text-gx-orange font-mono text-[9px] text-left space-y-1 select-none">
-                {hackLog.map((log, i) => (
-                  <div key={i} className="flex gap-1.5 leading-normal">
-                    <span className="text-gx-orange/60">&gt;&gt;</span>
-                    <span>{log}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Actions: Admin Bypass */}
-              <div className="flex gap-4">
-                <button
-                  onClick={forceBypass}
-                  onMouseEnter={playHover}
-                  className="w-full py-3 border border-red-500/20 hover:border-red-500 bg-transparent text-red-500/80 hover:text-red-500 font-display font-bold uppercase text-[10px] transition-colors clip-corner"
-                >
-                  Admin Force Bypass [OVERRIDE]
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Dynamic Matrix-style Loader for execution */}
-        {isCompiling && (
-          <div className="fixed inset-0 bg-gx-black/95 z-[100] flex flex-col items-center justify-center p-6">
-            <div className="text-center max-w-md w-full">
-              <h2 className="font-display text-gx-green text-4xl md:text-5xl uppercase tracking-tighter mb-4 animate-pulse">
-                COMPILING HEIST PLAN
-              </h2>
-              <div className="bg-gx-dark border border-gx-gray p-4 font-mono text-2xs text-left mb-6 text-gx-green/70 space-y-1">
-                <div>[SYSTEM] INITIALIZING COMPILER PROTOCOLS...</div>
-                <div>[SYSTEM] PACKAGING SERVICES AND TIMELINE TARGETS...</div>
-                <div>[SYSTEM] SECURING COMM PORT SYNC TO {intel.email}...</div>
-                <div>[SYSTEM] INJECTING STRATEGY COEFFICIENTS...</div>
-                {compileProgress > 50 && <div>[SYSTEM] UPLOADING DOSSIER TO SAFE LOGS... [OK]</div>}
-                {compileProgress === 100 && <div>[SYSTEM] OPERATION EXECUTING SUCCESSFULLY.</div>}
-              </div>
-              <div className="w-full h-3 border border-gx-green/30 p-0.5 bg-gx-black mb-2">
-                <div
-                  className="h-full bg-gx-green transition-all duration-150"
-                  style={{ width: `${compileProgress}%` }}
-                />
-              </div>
-              <div className="font-mono text-gx-green text-sm">{compileProgress}% COMPLETE</div>
-            </div>
-          </div>
-        )}
-
-        {/* Printable/Interactive Mission Dossier View */}
-        {showDossier ? (
-          <div className="bg-gx-dark border-2 border-gx-green p-8 md:p-12 shadow-2xl relative clip-corner mt-4 print:border-black print:bg-white print:text-black">
-            {/* Top Operational Headers */}
-            <div className="flex justify-between items-center border-b-2 border-gx-green/30 pb-6 mb-8 print:border-black">
-              <div>
-                <span className="block text-gx-green font-mono text-xs uppercase tracking-widest print:text-black">
-                  CLASSIFIED // GLORYX OPERATION ARCHIVE
-                </span>
-                <h1 className="font-display font-bold text-4xl md:text-5xl uppercase tracking-tighter text-white mt-1 print:text-black">
-                  Mission Dossier
-                </h1>
-              </div>
-              <CheckCircle className="text-gx-green w-12 h-12 print:hidden" />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 font-mono text-sm leading-relaxed text-gray-300 print:text-black">
-              <div>
-                <h3 className="text-gx-orange font-display font-bold text-lg uppercase tracking-wide mb-3 print:text-black">
-                  1. Operator Intel
-                </h3>
-                <div className="space-y-1">
-                  <div><span className="text-gx-green print:text-black font-bold">Code Name:</span> {intel.codeName}</div>
-                  {intel.corporation && <div><span className="text-gx-green print:text-black font-bold">Corporation:</span> {intel.corporation}</div>}
-                  <div><span className="text-gx-green print:text-black font-bold">Secure Frequency:</span> {intel.email}</div>
-                  {intel.channel && <div><span className="text-gx-green print:text-black font-bold">Comm Port:</span> {intel.channel}</div>}
-                  {heistResult?.heistCode && (
-                    <div><span className="text-gx-green print:text-black font-bold">Transaction Key:</span> {heistResult.heistCode}</div>
-                  )}
-                  {heistResult?.status && (
-                    <div><span className="text-gx-green print:text-black font-bold">Dossier Status:</span> {heistResult.status}</div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-gx-orange font-display font-bold text-lg uppercase tracking-wide mb-3 print:text-black">
-                  2. Calibrated Target Specs
-                </h3>
-                <div className="space-y-1">
-                  <div><span className="text-gx-green print:text-black font-bold">Operation Budget:</span> ${budget.toLocaleString()}</div>
-                  <div><span className="text-gx-green print:text-black font-bold">Planned Timeline:</span> {timeline}</div>
-                  <div><span className="text-gx-green print:text-black font-bold">Execution Speed:</span> Tactical Max</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-8 font-mono text-sm leading-relaxed border-t border-gx-green/20 pt-6 print:border-black text-gray-300 print:text-black">
-              <h3 className="text-gx-orange font-display font-bold text-lg uppercase tracking-wide mb-3 print:text-black">
-                3. Selected Targets (Weapons Selected)
-              </h3>
-              <ul className="list-inside list-decimal space-y-1 pl-2">
-                {selectedTargets.map((tId) => {
-                  const s = PLANNER_SERVICES.find((serv) => serv.id === tId);
-                  return (
-                    <li key={tId} className="font-bold">
-                      {s?.name} <span className="text-gx-green/60 print:text-black font-normal">(Min Required: ${s?.minPrice.toLocaleString()})</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-
-            {intel.brief && (
-              <div className="mb-10 font-mono text-sm leading-relaxed border-t border-gx-green/20 pt-6 print:border-black text-gray-300 print:text-black">
-                <h3 className="text-gx-orange font-display font-bold text-lg uppercase tracking-wide mb-3 print:text-black">
-                  4. Special Intel Instructions
-                </h3>
-                <p className="whitespace-pre-wrap bg-gx-black/40 p-4 border border-gx-gray italic print:border-black print:bg-white print:text-black">
-                  &quot;{intel.brief}&quot;
-                </p>
-              </div>
-            )}
-
-            {heistResult?.blueprint && (
-              <div className="mb-10 font-mono text-sm leading-relaxed border-t border-gx-green/20 pt-6 print:border-black text-gray-300 print:text-black">
-                <h3 className="text-gx-orange font-display font-bold text-lg uppercase tracking-wide mb-3 print:text-black">
-                  5. Operational Blueprint (G.L.O.R.Y. AI Analysis)
-                </h3>
-                <pre className="whitespace-pre-wrap bg-gx-black/40 p-4 border border-gx-gray print:border-black print:bg-white print:text-black font-mono text-xs leading-normal">
-                  {heistResult.blueprint}
-                </pre>
-              </div>
-            )}
-
-            {/* Bottom Alert / Success message */}
-            <div className="bg-gx-green/10 border border-gx-green p-4 font-mono text-xs text-gx-green text-center mb-8 print:border-black print:text-black">
-              PROTOCAL DISPATCHED. OUR CREW HAS SECURED THE OPERATION SPECIFICATIONS AND WILL ESTABLISH CONNECTION WITHIN 24 SECURE HOURS. PREPARE THE MATRIX.
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-between print:hidden">
-              <Link href="/">
-                <button
-                  onClick={playClick}
-                  onMouseEnter={playHover}
-                  className="w-full sm:w-auto px-8 py-3 bg-transparent hover:bg-white border-2 border-white text-white hover:text-gx-black font-display font-bold uppercase transition-colors duration-300 clip-corner"
-                >
-                  Return to Base
-                </button>
-              </Link>
-              
-              <button
-                onClick={handlePrint}
-                onMouseEnter={playHover}
-                className="w-full sm:w-auto px-8 py-3 bg-gx-green text-gx-black hover:bg-white hover:text-gx-black font-display font-bold uppercase transition-colors duration-300 flex items-center justify-center gap-2 clip-corner"
-              >
-                <Printer size={18} />
-                <span>Print Dossier</span>
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* HEIST STEPS BUILDER */
-          <div className="bg-gx-dark border border-gx-gray p-6 md:p-10 shadow-2xl relative clip-corner">
-            {/* Steps Progress Header */}
-            <div className="flex justify-between items-center border-b border-gx-green/20 pb-6 mb-8">
-              <div>
-                <span className="block text-gx-green font-display font-bold tracking-widest uppercase mb-1">
-                  Heist Customizer
-                </span>
-                <h2 className="font-display font-bold text-4xl md:text-5xl uppercase tracking-tighter leading-none">
-                  Step {step} of 3
-                </h2>
-              </div>
-              <div className="flex gap-2">
-                {[1, 2, 3].map((s) => (
-                  <div
-                    key={s}
-                    className={`w-10 h-2 transform -skew-x-12 transition-all duration-300 ${
-                      step >= s ? 'bg-gx-green' : 'bg-gx-gray'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* STEP 1: SELECT TARGETS */}
-            {step === 1 && (
-              <div>
-                <h3 className="font-display text-2xl uppercase font-bold tracking-wider mb-2 flex items-center gap-2">
-                  <Target className="text-gx-green animate-pulse" />
-                  <span>Select Target Operations</span>
-                </h3>
-                <p className="text-gray-400 font-sans text-sm mb-8">
-                  Choose the components you want the GloryX crew to build, optimize, or automate. Select all that apply.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  {PLANNER_SERVICES.map((s) => {
-                    const selected = selectedTargets.includes(s.id);
-                    return (
-                      <div
-                        key={s.id}
-                        onClick={() => toggleTarget(s.id)}
-                        onMouseEnter={playHover}
-                        className={`p-5 border cursor-pointer transition-all duration-300 relative select-none group flex flex-col justify-between min-h-[140px] ${
-                          selected
-                            ? s.accent === 'orange'
-                              ? 'border-gx-orange bg-gx-orange/5'
-                              : s.accent === 'blue'
-                              ? 'border-gx-blue bg-gx-blue/5'
-                              : 'border-gx-green bg-gx-green/5'
-                            : 'border-white/10 bg-gx-black/40 hover:border-white/40'
-                        }`}
-                      >
-                        <div>
-                          <div className="flex justify-between items-center mb-2">
-                            <h4 className="font-display font-bold text-xl uppercase tracking-wide group-hover:text-white">
-                              {s.name}
-                            </h4>
-                            <div
-                              className={`w-3 h-3 rounded-full ${
-                                selected
-                                  ? s.accent === 'orange'
-                                    ? 'bg-gx-orange'
-                                    : s.accent === 'blue'
-                                    ? 'bg-gx-blue'
-                                    : 'bg-gx-green'
-                                  : 'bg-transparent border border-white/20'
-                              }`}
-                            />
-                          </div>
-                          <p className="text-gray-400 text-xs font-sans leading-relaxed">
-                            {s.description}
-                          </p>
-                        </div>
-
-                        <div className="mt-4 flex justify-between items-end border-t border-white/5 pt-3">
-                          <span className="text-2xs text-gray-500 font-mono">ESTIMATED MIN ENTRY</span>
-                          <span className="font-mono text-sm font-bold text-white">
-                            ${s.minPrice.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="bg-gx-black p-4 border border-gx-gray flex justify-between items-center font-mono">
-                  <div>
-                    <span className="block text-2xs text-gray-500">WEAPONS UNLOCKED</span>
-                    <span className="text-sm font-bold text-white">
-                      {selectedTargets.length} TARGETS SELECTED
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <span className="block text-2xs text-gray-500">ESTIMATED BUDGET FLOOR</span>
-                    <span className="text-xl font-bold text-gx-green font-display">
-                      ${calculatedMinRequired.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2: CALIBRATE GEAR */}
-            {step === 2 && (
-              <div>
-                <h3 className="font-display text-2xl uppercase font-bold tracking-wider mb-2 flex items-center gap-2">
-                  <Cpu className="text-gx-orange animate-pulse" />
-                  <span>Calibrate Operational Gear</span>
-                </h3>
-                <p className="text-gray-400 font-sans text-sm mb-8">
-                  Establish parameters for capital investment and delivery speed. We scale scope based on resource allocation.
-                </p>
-
-                {/* Capital Slider */}
-                <div className="mb-10 font-mono">
-                  <div className="flex justify-between items-end mb-4">
-                    <div>
-                      <span className="block text-2xs text-gray-500 uppercase">CALIBRATE CAPITAL</span>
-                      <span className="text-xs text-gx-green font-bold">ALLOCATED LOOT POOL</span>
+                      {step > s.num ? <CheckCircle size={14} /> : s.num}
                     </div>
-                    <span className="text-3xl font-display font-bold text-white">
-                      ${budget.toLocaleString()}
+                    <span
+                      className="font-sans text-sm font-medium hidden sm:block transition-colors duration-300"
+                      style={{ color: step >= s.num ? 'var(--text-primary)' : 'var(--text-muted)' }}
+                    >
+                      {s.label}
                     </span>
                   </div>
-                  <input
-                    type="range"
-                    min={Math.max(calculatedMinRequired, 2000)}
-                    max={100000}
-                    step={1000}
-                    value={budget}
-                    onChange={(e) => setBudget(Number(e.target.value))}
-                    className="w-full h-2 bg-gx-gray rounded-lg appearance-none cursor-pointer accent-gx-green focus:outline-none"
-                  />
-                  <div className="flex justify-between text-2xs text-gray-500 mt-2">
-                    <span>MIN: ${Math.max(calculatedMinRequired, 2000).toLocaleString()}</span>
-                    <span>MAX: $100,000+</span>
-                  </div>
-                  {budget < calculatedMinRequired && (
-                    <div className="mt-3 flex items-center gap-2 text-2xs text-gx-orange font-bold">
-                      <AlertCircle size={14} />
-                      <span>ALERT: BUDGET IS LOWER THAN MINIMUM RECOMMENDED ENTRY FOR TARGETS.</span>
-                    </div>
+                  {i < STEPS.length - 1 && (
+                    <div
+                      className="flex-1 h-px transition-all duration-500 max-w-20"
+                      style={{ backgroundColor: step > s.num ? 'var(--accent)' : 'var(--border-subtle)' }}
+                    />
                   )}
-                </div>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
 
-                {/* Timeline Selector */}
-                <div className="font-mono">
-                  <span className="block text-2xs text-gray-500 uppercase mb-4">EXECUTION TIMELINE</span>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {['1 Month', '3 Months', '6 Months', '12 Months'].map((t) => {
-                      const active = timeline === t;
+          {/* ── Card ────────────────────────────────────── */}
+          <div className="glass-card rounded-3xl overflow-hidden">
+            <AnimatePresence mode="wait" custom={1}>
+
+              {/* ── Step 1: Solutions ────────────────────── */}
+              {!result && step === 1 && (
+                <motion.div
+                  key="step1" custom={1}
+                  variants={slideVariants} initial="enter" animate="center" exit="exit"
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="p-8"
+                >
+                  <h2 className="font-display font-bold text-2xl mb-2" style={{ color: 'var(--text-primary)' }}>
+                    Choose Your Solutions
+                  </h2>
+                  <p className="font-sans text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
+                    Select all that apply — you can choose multiple.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                    {SOLUTIONS.map((sol) => {
+                      const isActive = selected.includes(sol.id);
                       return (
-                        <div
-                          key={t}
-                          onClick={() => {
-                            playClick();
-                            setTimeline(t);
+                        <button
+                          key={sol.id}
+                          onClick={() => toggleSolution(sol.id)}
+                          className="text-left p-5 rounded-xl transition-all duration-200 group"
+                          style={{
+                            backgroundColor: isActive ? 'var(--accent-light)' : 'var(--bg-secondary)',
+                            border: `1.5px solid ${isActive ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                            boxShadow: isActive ? 'var(--shadow-brand)' : 'none',
                           }}
-                          className={`p-4 text-center border cursor-pointer font-bold uppercase transition-all duration-300 ${
-                            active
-                              ? 'border-gx-green bg-gx-green/10 text-gx-green'
-                              : 'border-white/10 bg-gx-black/40 hover:border-white/40 text-gray-400'
-                          }`}
                         >
-                          {t}
-                        </div>
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-200"
+                              style={{
+                                background: isActive ? 'linear-gradient(135deg, #6366f1, #06b6d4)' : 'var(--bg-tertiary)',
+                              }}
+                            >
+                              <sol.icon size={18} style={{ color: isActive ? '#fff' : 'var(--text-muted)' }} />
+                            </div>
+                            <div>
+                              <p
+                                className="font-display font-bold text-sm mb-1 transition-colors duration-200"
+                                style={{ color: isActive ? 'var(--accent)' : 'var(--text-primary)' }}
+                              >
+                                {sol.name}
+                              </p>
+                              <p className="font-sans text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                                {sol.description}
+                              </p>
+                            </div>
+                            {isActive && <CheckCircle size={16} style={{ color: 'var(--accent)', marginLeft: 'auto', flexShrink: 0 }} />}
+                          </div>
+                        </button>
                       );
                     })}
                   </div>
-                </div>
-              </div>
-            )}
 
-            {/* STEP 3: GATHER INTEL */}
-            {step === 3 && (
-              <div>
-                <h3 className="font-display text-2xl uppercase font-bold tracking-wider mb-2 flex items-center gap-2">
-                  <User className="text-gx-blue animate-pulse" />
-                  <span>Gather Operator Intel</span>
-                </h3>
-                <p className="text-gray-400 font-sans text-sm mb-8">
-                  Establish secure frequencies for communication. GloryX crew operates under absolute secrecy and speed.
-                </p>
+                  {selected.length > 0 && (
+                    <p className="text-sm mb-4 font-medium" style={{ color: 'var(--accent)' }}>
+                      {selected.length} solution{selected.length !== 1 ? 's' : ''} selected
+                    </p>
+                  )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6 font-mono">
-                  <div>
-                    <label className="block text-2xs text-gray-500 uppercase mb-2">OPERATOR CODENAME *</label>
-                    <input
-                      type="text"
-                      placeholder="E.G. AGENT SMITH"
-                      value={intel.codeName}
-                      onChange={(e) => setIntel({ ...intel, codeName: e.target.value })}
-                      className="w-full bg-gx-black border-2 border-white/10 p-4 text-sm focus:outline-none focus:border-gx-green uppercase placeholder-gray-700"
-                    />
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => step1Valid && setStep(2)}
+                      disabled={!step1Valid}
+                      className="btn-primary px-7 py-3 text-sm"
+                      style={{ opacity: step1Valid ? 1 : 0.45, cursor: step1Valid ? 'pointer' : 'not-allowed' }}
+                    >
+                      Continue
+                      <ArrowRight size={16} />
+                    </button>
                   </div>
+                </motion.div>
+              )}
 
-                  <div>
-                    <label className="block text-2xs text-gray-500 uppercase mb-2">TARGET CORPORATION</label>
-                    <input
-                      type="text"
-                      placeholder="E.G. MATRIX INC"
-                      value={intel.corporation}
-                      onChange={(e) => setIntel({ ...intel, corporation: e.target.value })}
-                      className="w-full bg-gx-black border-2 border-white/10 p-4 text-sm focus:outline-none focus:border-gx-green uppercase placeholder-gray-700"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-2xs text-gray-500 uppercase mb-2">SECURE CHANNEL FREQUENCY *</label>
-                    <input
-                      type="email"
-                      placeholder="E.G. DIRECT@EMAIL.COM"
-                      value={intel.email}
-                      onChange={(e) => setIntel({ ...intel, email: e.target.value })}
-                      className="w-full bg-gx-black border-2 border-white/10 p-4 text-sm focus:outline-none focus:border-gx-green uppercase placeholder-gray-700"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-2xs text-gray-500 uppercase mb-2">SECONDARY FREQUENCY (TELEGRAM/DISCORD)</label>
-                    <input
-                      type="text"
-                      placeholder="E.G. DISCORD // TELEGRAM USER"
-                      value={intel.channel}
-                      onChange={(e) => setIntel({ ...intel, channel: e.target.value })}
-                      className="w-full bg-gx-black border-2 border-white/10 p-4 text-sm focus:outline-none focus:border-gx-green uppercase placeholder-gray-700"
-                    />
-                  </div>
-                </div>
-
-                <div className="font-mono">
-                  <label className="block text-2xs text-gray-500 uppercase mb-2">MISSION BRIEF / ADDITIONAL INTEL</label>
-                  <textarea
-                    placeholder="DESCRIBE THE TARGET BOTTLENECK AND SPECIFICATIONS IN DETAIL..."
-                    rows={4}
-                    value={intel.brief}
-                    onChange={(e) => setIntel({ ...intel, brief: e.target.value })}
-                    className="w-full bg-gx-black border-2 border-white/10 p-4 text-sm focus:outline-none focus:border-gx-green uppercase placeholder-gray-700 font-mono"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Stepper Navigation Actions */}
-            <div className="mt-12 flex justify-between border-t border-white/10 pt-6">
-              {step > 1 ? (
-                <button
-                  onClick={handlePrevStep}
-                  onMouseEnter={playHover}
-                  className="px-6 py-3 bg-transparent border border-white/20 hover:border-white text-white font-display font-bold uppercase transition-colors flex items-center gap-2 clip-corner"
+              {/* ── Step 2: Parameters ───────────────────── */}
+              {!result && step === 2 && (
+                <motion.div
+                  key="step2" custom={1}
+                  variants={slideVariants} initial="enter" animate="center" exit="exit"
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="p-8"
                 >
-                  <ArrowLeft size={16} />
-                  <span>Previous</span>
-                </button>
-              ) : (
-                <Link href="/">
-                  <button
-                    onClick={playClick}
-                    onMouseEnter={playHover}
-                    className="px-6 py-3 bg-transparent border border-white/20 hover:border-white text-white font-display font-bold uppercase transition-colors flex items-center gap-2 clip-corner"
+                  <h2 className="font-display font-bold text-2xl mb-2" style={{ color: 'var(--text-primary)' }}>
+                    Set Your Parameters
+                  </h2>
+                  <p className="font-sans text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
+                    Help us scope your project accurately.
+                  </p>
+
+                  {/* Budget */}
+                  <div className="mb-8">
+                    <label className="block font-display font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>
+                      Investment Range
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {BUDGETS.map((b) => (
+                        <button
+                          key={b.label}
+                          onClick={() => setBudget(b.value)}
+                          className="py-4 px-5 rounded-xl font-display font-semibold text-sm transition-all duration-200"
+                          style={{
+                            backgroundColor: budget === b.value ? 'var(--accent-light)' : 'var(--bg-secondary)',
+                            border: `1.5px solid ${budget === b.value ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                            color: budget === b.value ? 'var(--accent)' : 'var(--text-primary)',
+                            boxShadow: budget === b.value ? 'var(--shadow-brand)' : 'none',
+                          }}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Timeline */}
+                  <div className="mb-8">
+                    <label className="block font-display font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>
+                      Desired Timeline
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {TIMELINES.map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setTimeline(t)}
+                          className="px-5 py-2.5 rounded-xl font-sans font-medium text-sm transition-all duration-200"
+                          style={{
+                            backgroundColor: timeline === t ? 'var(--accent-light)' : 'var(--bg-secondary)',
+                            border: `1.5px solid ${timeline === t ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                            color: timeline === t ? 'var(--accent)' : 'var(--text-secondary)',
+                          }}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <button onClick={() => setStep(1)} className="btn-secondary px-6 py-3 text-sm">
+                      <ArrowLeft size={15} />
+                      Back
+                    </button>
+                    <button
+                      onClick={() => step2Valid && setStep(3)}
+                      disabled={!step2Valid}
+                      className="btn-primary px-7 py-3 text-sm"
+                      style={{ opacity: step2Valid ? 1 : 0.45, cursor: step2Valid ? 'pointer' : 'not-allowed' }}
+                    >
+                      Continue
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── Step 3: Your Info ────────────────────── */}
+              {!result && step === 3 && (
+                <motion.div
+                  key="step3" custom={1}
+                  variants={slideVariants} initial="enter" animate="center" exit="exit"
+                  transition={{ duration: 0.35, ease: 'easeOut' }}
+                  className="p-8"
+                >
+                  <h2 className="font-display font-bold text-2xl mb-2" style={{ color: 'var(--text-primary)' }}>
+                    Your Information
+                  </h2>
+                  <p className="font-sans text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>
+                    We&apos;ll use this to personalise your system blueprint and follow up with next steps.
+                  </p>
+
+                  <div className="space-y-4 mb-8">
+                    {[
+                      { key: 'name', label: 'Your Name', placeholder: 'Alex Johnson', required: true },
+                      { key: 'company', label: 'Company / Organisation', placeholder: 'Acme Corp', required: false },
+                      { key: 'email', label: 'Email Address', placeholder: 'you@yourcompany.com', required: true, type: 'email' },
+                      { key: 'website', label: 'Current Website', placeholder: 'https://yourcompany.com', required: false },
+                    ].map(({ key, label, placeholder, required, type }) => (
+                      <div key={key}>
+                        <label className="block font-sans font-semibold text-xs mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                          {label}{required && <span style={{ color: 'var(--accent)' }}> *</span>}
+                        </label>
+                        <input
+                          type={type || 'text'}
+                          value={(contact as unknown as Record<string, string>)[key]}
+                          onChange={(e) => setContact((prev) => ({ ...prev, [key]: e.target.value }))}
+                          placeholder={placeholder}
+                          className="input-cinematic text-sm"
+                        />
+                      </div>
+                    ))}
+
+                    <div>
+                      <label className="block font-sans font-semibold text-xs mb-1.5 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                        Project Brief <span className="normal-case">(optional)</span>
+                      </label>
+                      <textarea
+                        value={contact.brief}
+                        onChange={(e) => setContact((prev) => ({ ...prev, brief: e.target.value }))}
+                        placeholder="Briefly describe your project goals, challenges, or anything else we should know..."
+                        rows={4}
+                        className="input-cinematic text-sm"
+                        style={{ resize: 'vertical' }}
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl mb-6 text-sm"
+                      style={{ backgroundColor: 'rgba(251,113,133,0.1)', border: '1px solid rgba(251,113,133,0.3)', color: '#fb7185' }}
+                    >
+                      <AlertCircle size={15} />
+                      {error}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between">
+                    <button onClick={() => setStep(2)} className="btn-secondary px-6 py-3 text-sm">
+                      <ArrowLeft size={15} />
+                      Back
+                    </button>
+                    <button
+                      onClick={() => step3Valid && submitBlueprint()}
+                      disabled={!step3Valid || loading}
+                      className="btn-primary px-7 py-3 text-sm"
+                      style={{ opacity: (step3Valid && !loading) ? 1 : 0.55, cursor: (step3Valid && !loading) ? 'pointer' : 'not-allowed' }}
+                    >
+                      {loading ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Generating Blueprint...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={15} />
+                          Generate Blueprint
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* ── Blueprint Result ─────────────────────── */}
+              {result && (
+                <motion.div
+                  key="result"
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="p-8"
+                >
+                  {/* Success header */}
+                  <div className="text-center mb-8">
+                    <div
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                      style={{ background: 'linear-gradient(135deg, #6366f1, #06b6d4)', boxShadow: 'var(--shadow-brand)' }}
+                    >
+                      <CheckCircle size={28} className="text-white" />
+                    </div>
+                    <h2 className="font-display font-bold text-3xl mb-2" style={{ color: 'var(--text-primary)' }}>
+                      Your Blueprint is Ready
+                    </h2>
+                    <p className="font-sans text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      Project Reference: <span className="font-mono font-bold" style={{ color: 'var(--accent)' }}>{result.projectRef}</span>
+                    </p>
+                  </div>
+
+                  {/* Blueprint content */}
+                  <div
+                    className="rounded-xl p-6 mb-6 whitespace-pre-wrap font-sans text-sm leading-relaxed"
+                    style={{
+                      backgroundColor: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-default)',
+                      color: 'var(--text-primary)',
+                    }}
                   >
-                    <ArrowLeft size={16} />
-                    <span>Return</span>
-                  </button>
-                </Link>
+                    {result.blueprint}
+                  </div>
+
+                  {/* Selected solutions summary */}
+                  <div className="mb-6">
+                    <p className="font-sans font-semibold text-xs uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+                      Scoped Solutions
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {selected.map((id) => {
+                        const sol = SOLUTIONS.find((s) => s.id === id);
+                        return sol ? (
+                          <span
+                            key={id}
+                            className="px-3 py-1.5 rounded-full font-sans text-xs font-medium"
+                            style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent)', border: '1px solid var(--border-default)' }}
+                          >
+                            {sol.name}
+                          </span>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-wrap gap-3">
+                    <button className="btn-primary flex-1 justify-center text-sm py-3">
+                      <CalendarCheck size={16} />
+                      Start a Conversation
+                    </button>
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([`PROJECT REF: ${result.projectRef}\n\n${result.blueprint}`], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url; a.download = `BinaryScouts-Blueprint-${result.projectRef}.txt`; a.click(); URL.revokeObjectURL(url);
+                      }}
+                      className="btn-secondary text-sm py-3 px-5"
+                    >
+                      <Download size={15} />
+                      Download
+                    </button>
+                    <button
+                      onClick={() => { setResult(null); setStep(1); setSelected([]); setBudget(null); setTimeline('3 Months'); setContact({ name: '', company: '', email: '', website: '', brief: '' }); }}
+                      className="btn-secondary text-sm py-3 px-5"
+                    >
+                      Start Over
+                    </button>
+                  </div>
+                </motion.div>
               )}
 
-              {step < 3 ? (
-                <button
-                  onClick={handleNextStep}
-                  onMouseEnter={playHover}
-                  className="px-8 py-3 bg-gx-green text-gx-black hover:bg-white font-display font-bold uppercase transition-colors flex items-center gap-2 clip-corner"
-                >
-                  <span>Next Step</span>
-                  <ArrowRight size={16} />
-                </button>
-              ) : (
-                <button
-                  onClick={executeHeist}
-                  onMouseEnter={playHover}
-                  className="px-10 py-3 bg-gx-orange text-white hover:bg-white hover:text-gx-black font-display font-bold uppercase transition-colors flex items-center gap-2 clip-corner animate-pulse"
-                >
-                  <Play size={16} className="fill-current" />
-                  <span>Execute Heist Plan</span>
-                </button>
-              )}
-            </div>
+            </AnimatePresence>
           </div>
-        )}
+
+          {/* ── Summary strip ───────────────────────────── */}
+          {!result && step > 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 px-5 py-4 rounded-xl flex flex-wrap gap-4 text-xs"
+              style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}
+            >
+              {selected.length > 0 && (
+                <span style={{ color: 'var(--text-muted)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Solutions: </span>
+                  {selected.map((id) => SOLUTIONS.find((s) => s.id === id)?.name).filter(Boolean).join(', ')}
+                </span>
+              )}
+              {budget && (
+                <span style={{ color: 'var(--text-muted)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Budget: </span>
+                  {BUDGETS.find((b) => b.value === budget)?.label}
+                </span>
+              )}
+              <span style={{ color: 'var(--text-muted)' }}>
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Timeline: </span>
+                {timeline}
+              </span>
+            </motion.div>
+          )}
+        </div>
       </main>
 
       <Footer />
-    </motion.div>
+    </div>
   );
 }

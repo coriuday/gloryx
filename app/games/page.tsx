@@ -1,8 +1,6 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import React from 'react';
-import GamesPage from '@/components/pages/GamesPage';
-
+// /games is now /work — redirect permanently
 export default function Page() {
-  return <GamesPage />;
+  redirect('/work');
 }

@@ -1,141 +1,190 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAudio } from '@/components/hooks/AudioProvider';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface IntroLoaderProps {
   onComplete: () => void;
 }
 
-const BOOT_LOGS = [
-  'GLORYX CORE SECURITY INTERFACE v2.5.0',
-  'INITIALIZING SYSTEM DECRYPTOR...',
-  'ESTABLISHING CONNECTION TO SECURE NETWORK... [OK]',
-  'MOUNTING VIRTUAL H.U.D. OVERLAYS... [OK]',
-  'CALIBRATING WEB AUDIO SYNTHESIZERS... [OK]',
-  'BYPASSING SECURITY FIREWALL PROTOCOLS... [OK]',
-  'SYNCING PROJECT DATA PACKAGES... [OK]',
-  'ESTABLISHING LINK TO THE MATRIX... [CONNECTED]',
-  'DECRYPTION COMPLETE. BOOTING GLORYX PLATFORM...'
-];
-
 const IntroLoader: React.FC<IntroLoaderProps> = ({ onComplete }) => {
-  const { playHover, playBoot, playSuccess } = useAudio();
-  const [logs, setLogs] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
-  const [isSkipped, setIsSkipped] = useState(false);
-  const [logIndex, setLogIndex] = useState(0);
+  const [phase, setPhase] = useState<'loading' | 'reveal' | 'exit'>('loading');
 
-  // Print logs sequentially
   useEffect(() => {
-    if (logIndex < BOOT_LOGS.length && !isSkipped) {
-      const delay = logIndex === 0 ? 200 : Math.random() * 250 + 100;
-      const timer = setTimeout(() => {
-        setLogs((prev) => [...prev, BOOT_LOGS[logIndex]]);
-        setLogIndex(logIndex + 1);
-        playHover(); // Play subtle click sound for each log printed
-      }, delay);
-      return () => clearTimeout(timer);
-    }
-  }, [logIndex, isSkipped, playHover]);
+    const start = performance.now();
+    const duration = 2000;
 
-  // Handle loading progress bar
-  useEffect(() => {
-    if (!isSkipped) {
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          const increment = Math.floor(Math.random() * 12) + 4;
-          return Math.min(prev + increment, 100);
-        });
-      }, 150);
-      return () => clearInterval(interval);
-    }
-  }, [isSkipped]);
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      // Eased progress — slow start, fast finish
+      const t = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 2.5);
+      const pct = Math.round(eased * 100);
+      setProgress(pct);
 
-  // Complete loader when progress is 100 and logs are finished
-  useEffect(() => {
-    if ((progress === 100 && logIndex === BOOT_LOGS.length) || isSkipped) {
-      playSuccess();
-      playBoot();
-      const fadeTimer = setTimeout(() => {
-        onComplete();
-      }, 800); // Allow fade animation to run
-      return () => clearTimeout(fadeTimer);
-    }
-  }, [progress, logIndex, isSkipped, onComplete, playBoot, playSuccess]);
-
-  const handleSkip = () => {
-    setIsSkipped(true);
-  };
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        setPhase('reveal');
+        setTimeout(() => {
+          setPhase('exit');
+          setTimeout(onComplete, 600);
+        }, 400);
+      }
+    };
+    requestAnimationFrame(tick);
+  }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-gx-black z-[999] flex flex-col justify-between p-8 font-mono text-xs">
-      {/* Top Header info */}
-      <div className="flex justify-between text-gx-green/60 border-b border-gx-green/20 pb-4">
-        <div>SYSTEM STATUS: BOOTING</div>
-        <div className="hidden sm:block">LOCAL PORT: :3000 // CORE: V2</div>
-      </div>
-
-      {/* Terminal Screen Console */}
-      <div className="flex-1 my-8 max-w-4xl mx-auto w-full flex flex-col justify-center">
-        {/* Large Glitching Title */}
-        <div className="text-center mb-12">
-          <h1 className="font-display text-gx-green font-bold text-6xl md:text-8xl lg:text-9xl uppercase tracking-tighter animate-pulse select-none">
-            GLORY<span className="text-gx-orange">X</span>
-          </h1>
-          <p className="text-gx-green/40 tracking-[0.3em] uppercase text-[10px] mt-2">
-            Dominate The Matrix
-          </p>
-        </div>
-
-        {/* Console Print Log Buffer */}
-        <div className="bg-gx-dark/60 border border-gx-gray p-6 h-64 overflow-y-auto mb-8 text-gx-green/90 font-mono text-left space-y-2 selection:bg-gx-green/20">
-          {logs.map((log, i) => (
-            <div key={i} className="flex gap-2">
-              <span className="text-gx-orange/70">&gt;</span>
-              <span className={i === BOOT_LOGS.length - 1 ? 'text-gx-orange font-bold' : ''}>
-                {log}
-              </span>
-            </div>
-          ))}
-          {logIndex < BOOT_LOGS.length && (
-            <div className="flex gap-2 items-center">
-              <span className="text-gx-orange/70 animate-pulse">&gt;</span>
-              <span className="w-2.5 h-4 bg-gx-green animate-pulse" />
-            </div>
-          )}
-        </div>
-
-        {/* Progress Bar Container */}
-        <div className="max-w-xl mx-auto w-full">
-          <div className="flex justify-between text-gx-green mb-2 font-bold">
-            <span>DECRYPTING DATA CORE</span>
-            <span>{progress}%</span>
-          </div>
-          <div className="w-full h-3 border border-gx-green/30 p-0.5 bg-gx-black">
+    <AnimatePresence>
+      {phase !== 'exit' && (
+        <motion.div
+          className="fixed inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden"
+          style={{ background: 'var(--bg-canvas)' }}
+          exit={{ opacity: 0, filter: 'blur(8px)', scale: 1.02 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {/* Atmospheric orbs */}
+          <div className="absolute inset-0 pointer-events-none">
             <div
-              className="h-full bg-gx-green transition-all duration-150 ease-out shadow-[0_0_8px_#79c043]"
-              style={{ width: `${progress}%` }}
+              className="absolute w-[700px] h-[700px] rounded-full"
+              style={{
+                background: 'radial-gradient(circle, var(--orb-violet) 0%, transparent 65%)',
+                top: '10%', left: '20%',
+                transform: 'translate(-50%, -50%)',
+                filter: 'blur(80px)',
+                animation: 'atmosphericFloat 8s ease-in-out infinite',
+              }}
+            />
+            <div
+              className="absolute w-[500px] h-[500px] rounded-full"
+              style={{
+                background: 'radial-gradient(circle, var(--orb-rose) 0%, transparent 65%)',
+                bottom: '15%', right: '20%',
+                filter: 'blur(70px)',
+                animation: 'atmosphericFloat 10s ease-in-out infinite reverse',
+              }}
+            />
+            <div
+              className="absolute w-[400px] h-[400px] rounded-full"
+              style={{
+                background: 'radial-gradient(circle, var(--orb-sage) 0%, transparent 65%)',
+                top: '60%', left: '60%',
+                filter: 'blur(90px)',
+                animation: 'atmosphericFloat 13s ease-in-out infinite',
+              }}
             />
           </div>
-        </div>
-      </div>
 
-      {/* Bottom Footer Info & Skip Button */}
-      <div className="flex justify-between items-center text-gx-green/60 border-t border-gx-green/20 pt-4">
-        <div>CODENAME: GLORYX AGENCY</div>
-        <button
-          onClick={handleSkip}
-          className="px-6 py-2 border border-gx-green/30 bg-gx-dark hover:bg-gx-green hover:text-gx-black text-gx-green transition-colors font-bold uppercase tracking-wider text-2xs clip-corner"
-        >
-          Skip Decryption [ESC]
-        </button>
-      </div>
-    </div>
+          {/* Center content */}
+          <div className="relative z-10 flex flex-col items-center gap-10 px-6 max-w-sm w-full text-center">
+
+            {/* Animated logo mark */}
+            <motion.div
+              className="relative"
+              initial={{ scale: 0.7, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+            >
+              {/* Outer glow ring */}
+              <motion.div
+                className="absolute inset-0 rounded-[28px]"
+                style={{
+                  background: 'var(--gradient-primary)',
+                  filter: 'blur(20px)',
+                  opacity: 0.35,
+                  transform: 'scale(1.4)',
+                }}
+                animate={{ opacity: [0.25, 0.55, 0.25] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              />
+
+              {/* Logo mark */}
+              <div
+                className="relative w-20 h-20 rounded-[24px] flex items-center justify-center"
+                style={{
+                  background: 'var(--gradient-primary)',
+                  boxShadow: 'var(--shadow-brand)',
+                }}
+              >
+                <span className="font-display font-bold text-2xl text-white tracking-tight">BS</span>
+              </div>
+
+              {/* Rotating dashed ring */}
+              <motion.div
+                className="absolute -inset-4 rounded-[36px] border opacity-25"
+                style={{ borderColor: 'var(--accent)', borderStyle: 'dashed' }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+              />
+            </motion.div>
+
+            {/* Brand wordmark — clip reveal */}
+            <motion.div
+              initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ delay: 0.5, duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              <h1
+                className="font-display font-bold text-4xl md:text-5xl tracking-tight leading-none"
+                style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
+              >
+                Binary<span className="gradient-text">Scouts</span>
+              </h1>
+              <p
+                className="font-sans text-xs mt-3 tracking-[0.2em] uppercase"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Building Intelligent Systems
+              </p>
+            </motion.div>
+
+            {/* Progress bar */}
+            <motion.div
+              className="w-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+            >
+              <div
+                className="w-full h-0.5 rounded-full overflow-hidden"
+                style={{ background: 'var(--glass-border-1)' }}
+              >
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    background: 'var(--gradient-primary)',
+                    width: `${progress}%`,
+                    transition: 'width 0.05s ease-out',
+                    boxShadow: '0 0 10px rgba(139,92,246,0.5)',
+                  }}
+                />
+              </div>
+
+              {/* Reveal overlay */}
+              <motion.div
+                className="flex justify-between items-center mt-3"
+                style={{ opacity: 0.5 }}
+              >
+                <span
+                  className="font-sans text-[10px] uppercase tracking-widest"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  Initialising
+                </span>
+                <span
+                  className="font-sans text-[10px] tabular-nums"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  {progress}%
+                </span>
+              </motion.div>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

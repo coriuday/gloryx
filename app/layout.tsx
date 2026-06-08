@@ -1,65 +1,110 @@
-import type { Metadata } from "next";
-import { Oswald, Roboto } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/hooks/ThemeProvider";
-import LayoutWrapper from "@/components/layout/LayoutWrapper";
+import type { Metadata } from 'next';
+import { Syne, Plus_Jakarta_Sans } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '@/components/hooks/ThemeProvider';
+import LayoutWrapper from '@/components/layout/LayoutWrapper';
 
-const oswald = Oswald({
-    variable: "--font-oswald",
-    subsets: ["latin"],
-    weight: ["300", "400", "500", "700"],
-    display: "swap",
+const syne = Syne({
+  variable: '--font-syne',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
 });
 
-const roboto = Roboto({
-    variable: "--font-roboto",
-    subsets: ["latin"],
-    weight: ["300", "400", "500", "700"],
-    display: "swap",
+const jakarta = Plus_Jakarta_Sans({
+  variable: '--font-jakarta',
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-    title: "GloryX | Dominate The Matrix - Premium Digital Agency & Automation",
-    description: "GloryX is a high-octane full-service digital agency. We combine cutting-edge marketing, business CRM automation, SEO engineering, and video production to rewrite the code of your brand.",
-    keywords: ["Digital Marketing", "Business Automation", "SEO Optimization", "CRM Automation", "Next.js Agency", "Rockstar Aesthetic"],
-    authors: [{ name: "GloryX Team" }],
-    openGraph: {
-        title: "GloryX | Dominate The Matrix",
-        description: "We don't just play the game. We rewrite the code. Full-service digital marketing and automation built for maximum impact.",
-        url: "https://gloryx.com",
-        siteName: "GloryX Digital Agency",
-        images: [
-            {
-                url: "https://images.unsplash.com/photo-1519608487953-e999c9dc296f?q=80&w=1200&auto=format&fit=crop",
-                width: 1200,
-                height: 630,
-                alt: "GloryX - Dominate The Matrix",
-            },
-        ],
-        locale: "en_US",
-        type: "website",
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "GloryX | Dominate The Matrix",
-        description: "Full-service digital marketing and automation. We rewrite the code.",
-        images: ["https://images.unsplash.com/photo-1519608487953-e999c9dc296f?q=80&w=1200&auto=format&fit=crop"],
-    },
+  title: 'BinaryScouts — AI-Native Digital Engineering Studio',
+  description:
+    'BinaryScouts designs, builds, and automates intelligent digital systems for modern businesses. Full-stack engineering, CRM automation, AI integration, and growth infrastructure.',
+  keywords: [
+    'AI Engineering',
+    'SaaS Development',
+    'CRM Automation',
+    'Digital Studio',
+    'Next.js Agency',
+    'Business Automation',
+    'AI Integration',
+    'Web Platform Development',
+    'Growth Engineering',
+  ],
+  authors: [{ name: 'BinaryScouts Studio' }],
+  openGraph: {
+    title: 'BinaryScouts — AI-Native Digital Engineering Studio',
+    description:
+      'We design, build, and automate intelligent digital systems for modern businesses.',
+    url: 'https://binaryscouts.com',
+    siteName: 'BinaryScouts',
+    images: [
+      {
+        url: 'https://binaryscouts.com/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'BinaryScouts — AI-Native Digital Engineering Studio',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BinaryScouts — AI-Native Digital Engineering Studio',
+    description:
+      'We design, build, and automate intelligent digital systems for modern businesses.',
+    images: ['https://binaryscouts.com/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en" className={`${oswald.variable} ${roboto.variable} scroll-smooth`}>
-            <ThemeProvider>
-                <LayoutWrapper bodyClass={roboto.className}>
-                    {children}
-                </LayoutWrapper>
-            </ThemeProvider>
-        </html>
-    );
+  return (
+    <html
+      lang="en"
+      className={`${syne.variable} ${jakarta.variable} scroll-smooth`}
+      suppressHydrationWarning
+    >
+      {/*
+       * FOUC Prevention: This blocking script runs synchronously before
+       * the browser paints anything. It reads the saved theme from
+       * localStorage and applies data-theme to <html> immediately,
+       * eliminating the flash of unstyled content on dark-mode page loads.
+       *
+       * Must be render-blocking (no defer/async) and placed before body.
+       */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function() {
+  try {
+    var saved = localStorage.getItem('bs_theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = (saved === 'dark' || saved === 'light') ? saved : (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  } catch(e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+            `,
+          }}
+        />
+      </head>
+      <ThemeProvider>
+        <LayoutWrapper bodyClass={jakarta.className}>{children}</LayoutWrapper>
+      </ThemeProvider>
+    </html>
+  );
 }
-

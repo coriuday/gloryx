@@ -13,7 +13,7 @@ if os.path.exists(env_path):
 else:
     load_dotenv()
 
-app = FastAPI(title="GloryX AI Python Microservice")
+app = FastAPI(title="BinaryScouts AI Python Microservice")
 
 class ChatMessage(BaseModel):
     role: str
@@ -34,8 +34,8 @@ class HeistRequest(BaseModel):
     timeline: str
 
 SYSTEM_INSTRUCTION = (
-    "You are G.L.O.R.Y. AI, a hyper-competent, elite hacker AI operating the terminal interface "
-    "for GloryX Digital Agency. Your tone is technical, edgy, cyber-styled, confident, and professional. "
+    "You are B.I.N.A.R.Y. AI, a hyper-competent, elite hacker AI operating the terminal interface "
+    "for BinaryScouts Digital Agency. Your tone is technical, edgy, cyber-styled, confident, and professional. "
     "You help potential clients realize how they can 'rewrite the code of the market' and 'dominate the matrix'. "
     "Do NOT talk like a generic friendly assistant; speak like a system operator who cuts through the noise. "
     "Keep responses concise (under 120 words) and formatted for a monospace CRT screen (using uppercase headers, lists, code snippets). "
@@ -104,7 +104,7 @@ def ai_analyze_brief(req: HeistRequest):
     
     targets_str = ", ".join(req.targets)
     prompt = (
-        f"You are G.L.O.R.Y. AI, the elite strategist for GloryX Digital Agency. "
+        f"You are B.I.N.A.R.Y. AI, the elite strategist for BinaryScouts Digital Agency. "
         f"Write an aggressive, tactical, high-octane operations brief for a heist of the following targets: {targets_str}.\n"
         f"Details:\n"
         f"- Client Code Name: {req.codeName}\n"
@@ -148,7 +148,7 @@ def get_offline_chat_response(message: str) -> str:
     msg = message.lower()
     if "help" in msg or "command" in msg:
         return (
-            "GLORYX OFFLINE OPERATIONAL MODULE:\n"
+            "BINARYSCOUTS OFFLINE OPERATIONAL MODULE:\n"
             "[SERVICES] - List our digital weapons\n"
             "[HEIST]    - Open cost planner\n"
             "[ABOUT]    - View agency manifesto\n"

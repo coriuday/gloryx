@@ -4,8 +4,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // Proxy request to the Rust API backend gateway running on port 8080
-    const rustUrl = 'http://127.0.0.1:8080/api/chat';
+    // Proxy request to the Rust API backend gateway running on port 8081
+    const rustUrl = 'http://127.0.0.1:8081/api/chat';
 
     const response = await fetch(rustUrl, {
       method: 'POST',

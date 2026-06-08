@@ -61,7 +61,7 @@ struct PythonBlueprintResponse {
 async fn get_status() -> Json<StatusResponse> {
     Json(StatusResponse {
         status: "ONLINE".to_string(),
-        system: "GLORYX CORE API".to_string(),
+        system: "BINARYSCOUTS CORE API".to_string(),
         version: "2.5.0".to_string(),
     })
 }
@@ -152,7 +152,7 @@ async fn main() {
         .route("/api/heist", post(handle_heist))
         .layer(CorsLayer::permissive());
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8080").await.unwrap();
-    println!("[SYSTEM] GloryX Rust Backend booting online at http://127.0.0.1:8080");
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:8081").await.unwrap();
+    println!("[SYSTEM] BinaryScouts Rust Backend booting online at http://127.0.0.1:8081");
     axum::serve(listener, app).await.unwrap();
 }

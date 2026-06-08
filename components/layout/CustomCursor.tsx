@@ -1,117 +1,152 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+const CURSOR_SIZE = 8;
+const RING_SIZE = 32;
 
 const CustomCursor: React.FC = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [trailPosition, setTrailPosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  const [isHidden, setIsHidden] = useState(true);
-  const [isMobile, setIsMobile] = useState(true);
+  const dotRef  = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const posRef  = useRef({ x: -100, y: -100 });
+  const ringPos = useRef({ x: -100, y: -100 });
+  const rafRef  = useRef<number>(0);
+  const [isPointer, setIsPointer] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [enabled, setEnabled] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('bs_custom_cursor') !== 'false';
+  });
 
   useEffect(() => {
-    // Check if the user is on mobile
-    const checkMobile = () => {
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      setIsMobile(isTouch);
-    };
+    // Bail on touch devices
+    if (window.matchMedia('(pointer: coarse)').matches) return;
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+    // Check localStorage for cursor preference
+    const stored = localStorage.getItem('bs_custom_cursor');
+    if (stored === 'false') return; // user has disabled it
 
-    if (isMobile) return;
+    document.documentElement.classList.add('has-custom-cursor');
 
-    const handleMouseMove = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
-      setIsHidden(false);
-    };
+    const onMove = (e: MouseEvent) => {
+      posRef.current = { x: e.clientX, y: e.clientY };
+      if (!isVisible) setIsVisible(true);
 
-    const handleMouseLeave = () => {
-      setIsHidden(true);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseleave', handleMouseLeave);
-
-    // Trail lag effect
-    let frameId: number;
-    const updateTrail = () => {
-      setTrailPosition((prev) => {
-        const dx = position.x - prev.x;
-        const dy = position.y - prev.y;
-        return {
-          x: prev.x + dx * 0.15, // Speed factor
-          y: prev.y + dy * 0.15,
-        };
-      });
-      frameId = requestAnimationFrame(updateTrail);
-    };
-    frameId = requestAnimationFrame(updateTrail);
-
-    // Detect clickable elements
-    const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target) return;
-
-      const isClickable =
-        target.tagName === 'A' ||
-        target.tagName === 'BUTTON' ||
-        target.tagName === 'INPUT' ||
-        target.tagName === 'SELECT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.closest('a') ||
-        target.closest('button') ||
-        target.closest('[role="button"]') ||
-        window.getComputedStyle(target).cursor === 'pointer' ||
-        target.classList.contains('cursor-pointer');
-
-      setIsHovered(!!isClickable);
+      const pointerEl = target.closest('a, button, [role="button"], input, textarea, select, [data-cursor="pointer"]');
+      setIsPointer(!!pointerEl);
     };
+    const onLeave = () => setIsVisible(false);
+    const onEnter = () => setIsVisible(true);
 
-    document.addEventListener('mouseover', handleMouseOver);
+    window.addEventListener('mousemove', onMove, { passive: true });
+    document.addEventListener('mouseleave', onLeave);
+    document.addEventListener('mouseenter', onEnter);
+
+    // RAF loop: smooth ring interpolation (GPU via transform3d)
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    const loop = () => {
+      const { x, y } = posRef.current;
+
+      // Dot: instant
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate3d(${x - CURSOR_SIZE / 2}px, ${y - CURSOR_SIZE / 2}px, 0)`;
+      }
+
+      // Ring: lagging
+      ringPos.current.x = lerp(ringPos.current.x, x, 0.18);
+      ringPos.current.y = lerp(ringPos.current.y, y, 0.18);
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate3d(${ringPos.current.x - RING_SIZE / 2}px, ${ringPos.current.y - RING_SIZE / 2}px, 0)`;
+      }
+
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+
+    // Listen for toggle events from SettingsDrawer
+    const onToggle = (e: Event) => {
+      const enabled = (e as CustomEvent<{ enabled: boolean }>).detail.enabled;
+      setEnabled(enabled);
+      if (!enabled) {
+        document.documentElement.classList.remove('has-custom-cursor');
+        cancelAnimationFrame(rafRef.current);
+        window.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseleave', onLeave);
+        document.removeEventListener('mouseenter', onEnter);
+      } else {
+        document.documentElement.classList.add('has-custom-cursor');
+        window.addEventListener('mousemove', onMove, { passive: true });
+        document.addEventListener('mouseleave', onLeave);
+        document.addEventListener('mouseenter', onEnter);
+        rafRef.current = requestAnimationFrame(loop);
+      }
+    };
+    window.addEventListener('bs:cursor-toggle', onToggle);
 
     return () => {
-      window.removeEventListener('resize', checkMobile);
-      window.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseleave', handleMouseLeave);
-      document.removeEventListener('mouseover', handleMouseOver);
-      cancelAnimationFrame(frameId);
+      window.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseleave', onLeave);
+      document.removeEventListener('mouseenter', onEnter);
+      window.removeEventListener('bs:cursor-toggle', onToggle);
+      cancelAnimationFrame(rafRef.current);
+      document.documentElement.classList.remove('has-custom-cursor');
     };
-  }, [position.x, position.y, isMobile]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  if (isMobile || isHidden) return null;
+  if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
+    return null;
+  }
+
+  // Hidden when user has disabled cursor in settings
+  if (!enabled) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[9999]">
-      {/* Center Target Dot */}
+    <>
+      {/* Inner dot */}
       <div
-        className="fixed -translate-x-1/2 -translate-y-1/2 rounded-full bg-gx-green transition-transform duration-200 ease-out shadow-[0_0_8px_#79c043]"
+        ref={dotRef}
+        className="gpu"
         style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          width: isHovered ? '8px' : '4px',
-          height: isHovered ? '8px' : '4px',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: CURSOR_SIZE,
+          height: CURSOR_SIZE,
+          borderRadius: '50%',
+          backgroundColor: 'var(--accent)',
+          pointerEvents: 'none',
+          zIndex: 9999,
+          opacity: isVisible ? 1 : 0,
+          transition: 'opacity 0.2s ease, background-color 0.2s ease, transform 0.05s ease',
+          transform: 'translate3d(-100px, -100px, 0)',
         }}
       />
 
-      {/* Lagging Tactical HUD Crosshair */}
+      {/* Outer ring */}
       <div
-        className="fixed -translate-x-1/2 -translate-y-1/2 border border-gx-green/40 rounded-full transition-all duration-100 ease-out"
+        ref={ringRef}
+        className="gpu"
         style={{
-          left: `${trailPosition.x}px`,
-          top: `${trailPosition.y}px`,
-          width: isHovered ? '40px' : '26px',
-          height: isHovered ? '40px' : '26px',
-          transform: `translate(-50%, -50%) rotate(${position.x + position.y}deg)`,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: RING_SIZE,
+          height: RING_SIZE,
+          borderRadius: '50%',
+          border: `1.5px solid ${isPointer ? 'var(--cyan)' : 'var(--accent)'}`,
+          pointerEvents: 'none',
+          zIndex: 9998,
+          opacity: isVisible ? 0.65 : 0,
+          transition: 'opacity 0.3s ease, border-color 0.2s ease, width 0.2s ease, height 0.2s ease',
+          transform: 'translate3d(-100px, -100px, 0)',
+          ...(isPointer
+            ? { width: 44, height: 44, opacity: 0.45 }
+            : {}),
         }}
-      >
-        {/* HUD Tick Marks */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-1.5 bg-gx-green/60" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0.5 h-1.5 bg-gx-green/60" />
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-0.5 bg-gx-green/60" />
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-0.5 bg-gx-green/60" />
-      </div>
-    </div>
+      />
+    </>
   );
 };
 

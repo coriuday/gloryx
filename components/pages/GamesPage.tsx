@@ -1,384 +1,495 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { useAudio } from '@/components/hooks/AudioProvider';
-import { Play, Calendar, Trophy, AlertTriangle, ShieldCheck, X } from 'lucide-react';
+import PageTransition from '@/components/motion/PageTransition';
+import { ArrowRight, Sparkles, TrendingUp, X, Star, Quote } from 'lucide-react';
+import { ease, dur, viewport } from '@/lib/motion';
 
-interface GameRelease {
+interface Project {
   id: string;
   title: string;
-  category: string;
   subtitle: string;
-  stats: { label: string; value: string }[];
+  category: string;
   description: string;
   imageUrl: string;
-  missionBrief: string;
-  weapons: string[];
-  lootSecured: string[];
-  clientReview: {
+  stats: { label: string; value: string }[];
+  overview: string;
+  techStack: string[];
+  outcomes: string[];
+  testimonial: {
     quote: string;
     author: string;
     role: string;
   };
-  status: 'Accomplished' | 'Active';
+  gradient: string;
+  accentColor: string;
 }
 
-const RELEASES: GameRelease[] = [
+const PROJECTS: Project[] = [
   {
-    id: 'marketing-conquest',
-    title: 'GRAND THEFT AUTO: MARKETING CONQUEST',
+    id: 'growth-engine',
+    title: 'Digital Growth Engine',
+    subtitle: 'Scaling 5,000+ sales through intelligent PPC automation',
     category: 'Digital Marketing',
-    subtitle: 'Mission: Securing 5,000 sales on CRM autopilot',
+    description: 'We redesigned an entire paid acquisition system — from bid strategies to conversion tracking — to achieve scalable, consistent growth with dramatically reduced cost per lead.',
     imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1200&auto=format&fit=crop',
     stats: [
-      { label: 'Return on Ads', value: '410% ROI' },
-      { label: 'Growth Scale', value: '3.5x' },
-      { label: 'Customer CPA', value: '-42%' }
+      { label: 'Return on Ads',  value: '410% ROI' },
+      { label: 'Revenue Scale',  value: '3.5×' },
+      { label: 'Lead Cost Drop', value: '−42%' },
     ],
-    description: 'We hijacked standard paid advertising channels and hotwired a custom tracking script to optimize acquisition bids in real-time. The payload? Massive growth.',
-    missionBrief: 'Target client was bleeding marketing spend on broad keywords. The mission was to restrict wasted impressions, deploy semantic targeting pipelines, and scale sales automatically without bloating budgets.',
-    weapons: ['PPC Ads', 'Halftone Scripts', 'Next.js Frontend Analytics', 'Custom Bid Managers'],
-    lootSecured: [
-      '+$1.4M Generated Revenue',
-      '5,800+ Verified Customer Signups',
-      '-42% Reduction in Cost Per Acquisition'
-    ],
-    clientReview: {
-      quote: 'GloryX came in, stripped down our ad account, rewrote our conversion flows, and put the scale on auto. Absolute game-changers.',
+    overview: 'The client was overspending on broad keywords with poor targeting segmentation. We rebuilt the entire acquisition funnel — from keyword architecture to landing page optimisation — and deployed a custom real-time bid management system that continuously adjusts spend allocation.',
+    techStack: ['Google Ads API', 'Custom Bid Manager', 'Next.js Analytics', 'Data Studio Dashboards'],
+    outcomes: ['+$1.4M Generated Revenue', '5,800+ Verified Customer Signups', '−42% Reduction in Cost Per Acquisition'],
+    testimonial: {
+      quote: 'BinaryScouts came in, stripped down our ad account, rewrote our conversion flows, and put the scale on auto. Absolute game-changers.',
       author: 'Vikram Vance',
-      role: 'VP Marketing, Nexus Corp'
+      role: 'VP Marketing, Nexus Corp',
     },
-    status: 'Accomplished'
+    gradient: 'linear-gradient(135deg, rgba(139,92,246,0.16), rgba(236,72,153,0.08))',
+    accentColor: 'var(--accent)',
   },
   {
     id: 'crm-pipeline',
-    title: 'RED DEAD REDEMPTION: PIPELINE WILD WEST',
-    category: 'Business Automation',
-    subtitle: 'Mission: Taming 25,000 chaotic lead threads',
+    title: 'Intelligent CRM Pipeline',
+    subtitle: 'Automating 25,000 leads with zero manual intervention',
+    category: 'CRM Automation',
+    description: 'We replaced a chaotic manual lead management process with a fully automated, AI-assisted CRM pipeline that connects inbound leads to the right sales agent in under 2 minutes.',
     imageUrl: 'https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?q=80&w=1200&auto=format&fit=crop',
     stats: [
-      { label: 'Pipeline Errors', value: '-95%' },
-      { label: 'Response Time', value: '<2 mins' },
-      { label: 'Conversion Lift', value: '+34%' }
+      { label: 'Pipeline Errors', value: '−95%' },
+      { label: 'Response Time',   value: '< 2 min' },
+      { label: 'Conversion Lift', value: '+34%' },
     ],
-    description: 'We entered a lawless land of fragmented leads and manually typed spreadsheets. We established a secure, centralized CRM automated railroad that connects targets to closing agents instantly.',
-    missionBrief: 'Tame a chaotic Wild West database of leads incoming from 6 disconnected social APIs. We deployed cron listeners, message queue routers, and built automated WhatsApp and email outreach bots to nurture leads.',
-    weapons: ['Node.js API Bridges', 'WhatsApp API Orchestration', 'PostgreSQL Hub', 'CRM Cron Webhooks'],
-    lootSecured: [
-      '25,000+ Automated Leads Managed',
-      '95% Reduction in Database Sync Errors',
-      'Average Lead Response Time under 120 Seconds'
-    ],
-    clientReview: {
-      quote: 'Our sales team used to spend hours sorting leads. Now the automation feeds them high-intent hot calls directly. The pipeline runs itself.',
+    overview: 'The client had leads arriving from 6 disconnected social APIs, each requiring manual entry and follow-up. We designed a unified event-driven architecture with PostgreSQL as the central hub, WhatsApp API for outreach, and intelligent routing logic to prioritise high-intent prospects.',
+    techStack: ['Node.js API Bridges', 'WhatsApp Business API', 'PostgreSQL Hub', 'Cron Webhooks', 'Redis Queues'],
+    outcomes: ['25,000+ Automated Leads Managed', '95% Reduction in Database Sync Errors', 'Average Response < 120 Seconds'],
+    testimonial: {
+      quote: 'Our sales team used to spend hours sorting leads. Now the automation feeds them high-intent calls directly. The pipeline runs itself.',
       author: 'Clara Marston',
-      role: 'Operations Director, Frontier Logistics'
+      role: 'Operations Director, Frontier Logistics',
     },
-    status: 'Accomplished'
+    gradient: 'linear-gradient(135deg, rgba(236,72,153,0.14), rgba(249,115,22,0.06))',
+    accentColor: 'var(--rose)',
   },
   {
-    id: 'seo-conquest',
-    title: 'L.A. NOIRE: SEO SEARCH CONQUEST',
-    category: 'SEO Optimization',
-    subtitle: 'Mission: Investigating drops, ranking top #3',
+    id: 'seo-domination',
+    title: 'Organic Search Domination',
+    subtitle: 'Recovering and scaling from a 50% traffic drop',
+    category: 'SEO Engineering',
+    description: 'After an algorithmic update wiped out 50% of organic visibility, we performed a deep technical audit, rebuilt the site architecture, and executed a structured content strategy to reclaim and surpass original rankings.',
     imageUrl: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?q=80&w=1200&auto=format&fit=crop',
     stats: [
       { label: 'Organic Traffic', value: '+400%' },
       { label: 'Domain Authority', value: '+28 pts' },
-      { label: 'Lead Value', value: '+$340k' }
+      { label: 'Lead Value',       value: '+$340K' },
     ],
-    description: 'We investigated a mysterious drop in organic visibility. We dug into competitor footprints, patched technical code leaks, and launched an aggressive content syndicate sequence.',
-    missionBrief: 'The client lost 50% traffic after an algorithmic shift. We audited indexation pipelines, optimized server-side rendering loads, and scaled highly structured target terms to conquer primary page rankings.',
-    weapons: ['Next.js SSR Tuning', 'Schema Markup Generators', 'Automated Content Pipelines', 'Crawler Diagnostic Tools'],
-    lootSecured: [
-      'Top #3 Ranking on 45 Main Competitive Terms',
-      'Organic Traffic scale up by 400%',
-      'Saving $30k monthly in PPC alternative bids'
-    ],
-    clientReview: {
-      quote: 'They diagnosed issues that three previous SEO agencies missed. Within four months, our rankings skyrocketed. They know Google inside out.',
-      author: 'Detective Phelps',
-      role: 'CEO, CaseFinder SaaS'
+    overview: 'We audited the site\'s technical infrastructure, identified crawlability issues in the SSR setup, and rebuilt the content hierarchy around high-intent commercial terms. A structured syndication strategy accelerated authority growth across 45 target keywords.',
+    techStack: ['Next.js SSR Tuning', 'Schema Markup Generator', 'Content Pipeline', 'Crawler Diagnostics', 'Google Search Console API'],
+    outcomes: ['Top #3 Ranking on 45 Competitive Terms', 'Organic Traffic +400% in 4 months', 'Saving $30K/month in equivalent PPC spend'],
+    testimonial: {
+      quote: 'They diagnosed issues three previous SEO agencies missed. Within four months, our rankings skyrocketed. They know Google inside out.',
+      author: 'Therese Phelps',
+      role: 'CEO, CaseFinder SaaS',
     },
-    status: 'Accomplished'
+    gradient: 'linear-gradient(135deg, rgba(16,185,129,0.14), rgba(139,92,246,0.06))',
+    accentColor: 'var(--sage)',
   },
   {
-    id: 'video-render',
-    title: 'MAX PAYNE: HIGH-SPEED BRAND RENDER',
-    category: 'Video & Design',
-    subtitle: 'Mission: Cinematic storytelling in bullet time',
+    id: 'brand-motion',
+    title: 'Premium Brand Identity & Motion',
+    subtitle: 'A cinematic visual identity that drove viral growth',
+    category: 'Design & Motion',
+    description: 'We rebuilt a generic corporate visual identity into a premium, editorial brand system with a flagship cinematic brand film that generated 4.2M views across platforms.',
     imageUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop',
     stats: [
-      { label: 'Video Views', value: '4.2M' },
-      { label: 'CTR Growth', value: '+85%' },
-      { label: 'User Retention', value: '+70%' }
+      { label: 'Video Views',    value: '4.2M' },
+      { label: 'CTR Growth',     value: '+85%' },
+      { label: 'Brand Retention',value: '+70%' },
     ],
-    description: 'A dark, moody aesthetic overhaul designed to command user retention. High-impact motion grids and dark UI assets that load in bullet time.',
-    missionBrief: 'Rewrite the client\'s visual identity from generic corporate design to an edgy, premium tech branding layout, and produce a flagship CGI cinematic promotional clip.',
-    weapons: ['After Effects & Cinema 4D', 'Halftone Shaders', 'WebM High Compression Codecs', 'Dynamic CSS Animations'],
-    lootSecured: [
-      '4.2 Million Cross-platform Views',
-      '85% Increase in Interactive CTA Clickthroughs',
-      'Average Brand Watch Duration Increased by 70%'
-    ],
-    clientReview: {
-      quote: 'The video asset they produced went viral on Twitter. Our brand identity looks extremely premium now. They delivered exactly what we wanted.',
+    overview: 'The brand lacked visual distinction in a competitive space. We designed a complete system — typography, color palette, motion language, and illustration style — and produced a hero brand film using Cinema 4D and After Effects to bring the new identity to life.',
+    techStack: ['After Effects + Cinema 4D', 'Figma Design Systems', 'CSS Animation Library', 'Framer Motion', 'Lottie Animations'],
+    outcomes: ['4.2M Cross-platform Views', '+85% Interactive CTA Clickthrough Rate', 'Brand Watch Duration Increased 70%'],
+    testimonial: {
+      quote: 'The video they produced went viral on Twitter. Our brand identity looks extremely premium now. They delivered exactly what we envisioned.',
       author: 'Mona Sax',
-      role: 'Founder, Noir Studios'
+      role: 'Founder, Noir Studios',
     },
-    status: 'Accomplished'
-  }
+    gradient: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(236,72,153,0.08))',
+    accentColor: 'var(--accent)',
+  },
 ];
 
+const CATEGORY_COLORS: Record<string, string> = {
+  'Digital Marketing': 'var(--accent)',
+  'CRM Automation':    'var(--rose)',
+  'SEO Engineering':   'var(--sage)',
+  'Design & Motion':   'var(--accent)',
+};
+
 export default function GamesPage() {
-  const { playClick, playHover, playSuccess } = useAudio();
-  const [activeGame, setActiveGame] = useState<GameRelease | null>(null);
-
-  const openDossier = (game: GameRelease) => {
-    playSuccess();
-    setActiveGame(game);
-  };
-
-  const closeDossier = () => {
-    playClick();
-    setActiveGame(null);
-  };
+  const [activeProject, setActiveProject] = useState<Project | null>(null);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.99 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="min-h-screen bg-gx-black text-white font-sans selection:bg-gx-green selection:text-gx-black flex flex-col justify-between"
-    >
-      {/* Glitch sweep animation */}
-      <motion.div
-        initial={{ top: '0%' }}
-        animate={{ top: '100%' }}
-        transition={{ duration: 0.5, ease: 'easeInOut' }}
-        className="fixed left-0 right-0 h-12 bg-gradient-to-b from-transparent via-gx-green/20 to-transparent pointer-events-none z-[100] shadow-[0_0_10px_#79c043]"
-      />
-
+    <PageTransition>
       <Navbar />
 
-      <main className="flex-grow pt-32 pb-24 px-4 max-w-7xl mx-auto w-full relative z-10">
-        
-        {/* Background texture */}
-        <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-[0.03] pointer-events-none z-0" />
+      <main className="flex-grow pt-36 pb-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Page title */}
-        <div className="mb-16 border-b-4 border-gx-green pb-6">
-          <span className="block text-gx-green font-display font-bold tracking-[0.2em] uppercase mb-2">
-            GloryX Projects
-          </span>
-          <h1 className="font-display font-bold text-5xl md:text-7xl uppercase tracking-tighter text-white leading-none">
-            Our Releases
-          </h1>
-        </div>
-
-        {/* Featured Release banner */}
-        <div className="mb-16 border border-gx-orange/30 bg-gx-dark relative overflow-hidden group clip-corner">
-          <div className="absolute inset-0 bg-gx-black/40 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-gx-black via-gx-black/75 to-transparent z-10" />
-          <img
-            src="https://images.unsplash.com/photo-1519608487953-e999c9dc296f?q=80&w=1600&auto=format&fit=crop"
-            alt="Latest Release"
-            className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700 opacity-40"
-          />
-          <div className="relative z-20 p-8 md:p-16 max-w-2xl flex flex-col items-start gap-4">
-            <span className="bg-gx-orange text-white font-display font-bold uppercase text-2xs tracking-widest px-4 py-1">
-              Latest Masterpiece
-            </span>
-            <h2 className="font-display font-bold text-4xl md:text-6xl text-white uppercase tracking-tighter leading-none mt-2">
-              REWRITING THE MARKETING MATRIX
-            </h2>
-            <p className="text-gray-300 font-mono text-sm leading-relaxed mb-4">
-              Explore how we built the customized heist setups, automated CRM pipelines, and executed SEO conquests for our client organizations. Select a title below for the full mission briefing.
+          {/* Header */}
+          <motion.div
+            className="mb-16 max-w-2xl"
+            initial={{ opacity: 0, y: 32, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="eyebrow-badge mb-6">
+              <TrendingUp size={11} />
+              <span>Case Studies</span>
+            </div>
+            <h1
+              className="font-display font-bold text-5xl md:text-7xl tracking-tight mb-5"
+              style={{ color: 'var(--text-primary)', letterSpacing: '-0.05em' }}
+            >
+              Work that{' '}
+              <span className="gradient-text">delivers.</span>
+            </h1>
+            <p
+              className="font-sans text-xl leading-relaxed"
+              style={{ color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}
+            >
+              Real systems built for real businesses. Each engagement is precision-engineered to produce measurable outcomes.
             </p>
-            <button
-              onClick={() => openDossier(RELEASES[0])}
-              onMouseEnter={playHover}
-              className="px-8 py-4 bg-gx-green hover:bg-white text-gx-black font-display font-bold text-lg uppercase transition-colors duration-300 flex items-center gap-2 clip-corner"
-            >
-              <Play className="fill-current" size={16} />
-              <span>Analyze Featured Mission</span>
-            </button>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Games Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {RELEASES.map((game) => (
-            <div
-              key={game.id}
-              onClick={() => openDossier(game)}
-              onMouseEnter={playHover}
-              className="group border border-white/5 bg-gx-dark hover:border-gx-green transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between"
-            >
-              {/* Cover Artwork */}
-              <div className="relative h-64 w-full bg-gx-gray overflow-hidden">
-                <img
-                  src={game.imageUrl}
-                  alt={game.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-500 grayscale group-hover:grayscale-0"
+          {/* Featured project */}
+          <motion.div
+            initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="glass-card rounded-[2rem] overflow-hidden mb-10 cursor-pointer group"
+            onClick={() => setActiveProject(PROJECTS[0])}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 min-h-[320px]">
+              {/* Image */}
+              <div className="relative overflow-hidden">
+                <Image
+                  src={PROJECTS[0].imageUrl}
+                  alt={PROJECTS[0].title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  style={{ filter: 'saturate(0.85)' }}
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-gx-dark to-transparent opacity-90" />
-                
-                <span className="absolute top-4 left-4 bg-gx-black/80 backdrop-blur border border-gx-green/20 text-gx-green font-display font-bold uppercase text-2xs px-3 py-1 tracking-widest">
-                  {game.category}
-                </span>
-
-                <div className="absolute bottom-4 left-4 right-4 z-10 flex gap-2 justify-between items-end">
-                  <h3 className="font-display font-bold text-2xl text-white uppercase tracking-tighter group-hover:text-gx-green transition-colors leading-tight">
-                    {game.title}
-                  </h3>
+                <div
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(to right, transparent, var(--bg-glass))' }}
+                />
+                {/* Category badge */}
+                <div className="absolute top-5 left-5">
+                  <span
+                    className="px-3 py-1 rounded-full font-sans text-[10px] font-bold uppercase tracking-wider"
+                    style={{
+                      background: 'var(--glass-2)',
+                      border: '1px solid var(--glass-border-2)',
+                      color: 'var(--accent)',
+                      backdropFilter: 'blur(12px)',
+                    }}
+                  >
+                    {PROJECTS[0].category}
+                  </span>
                 </div>
               </div>
 
-              {/* Description & Mini Stats */}
-              <div className="p-6 flex-grow flex flex-col justify-between gap-6">
-                <p className="text-gray-400 font-mono text-xs leading-relaxed">
-                  {game.description}
-                </p>
+              {/* Content */}
+              <div className="p-8 md:p-10 flex flex-col justify-between">
+                <div>
+                  <span className="font-sans text-xs font-semibold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-muted)' }}>
+                    Featured Case Study
+                  </span>
+                  <h2
+                    className="font-display font-bold text-3xl md:text-4xl mb-3 leading-tight"
+                    style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
+                  >
+                    {PROJECTS[0].title}
+                  </h2>
+                  <p className="font-sans text-base leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
+                    {PROJECTS[0].description}
+                  </p>
 
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-2 border-t border-white/5 pt-4">
-                  {game.stats.map((st) => (
-                    <div key={st.label} className="text-left font-mono">
-                      <span className="block text-[10px] text-gray-500 uppercase">{st.label}</span>
-                      <span className="text-sm font-bold text-white uppercase">{st.value}</span>
-                    </div>
-                  ))}
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    {PROJECTS[0].stats.map((stat) => (
+                      <div key={stat.label}>
+                        <p
+                          className="font-display font-bold text-xl mb-0.5"
+                          style={{
+                            background: 'var(--gradient-primary)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '-0.04em',
+                          }}
+                        >
+                          {stat.value}
+                        </p>
+                        <p className="font-sans text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                          {stat.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Footer action bar */}
-              <div className="bg-gx-black/80 p-4 border-t border-white/5 flex justify-between items-center text-xs font-mono font-bold uppercase tracking-wider text-gx-green">
-                <span>Mission Accomplished</span>
-                <span className="group-hover:translate-x-2 transition-transform duration-200">Read Briefing &gt;&gt;</span>
+                <div className="flex items-center gap-2" style={{ color: 'var(--accent)' }}>
+                  <span className="font-sans font-semibold text-sm">Read Full Case Study</span>
+                  <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform duration-200" />
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </motion.div>
 
-        {/* Mission Dossier Modal overlay */}
-        {activeGame && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gx-black/90 backdrop-blur-md">
-            <div className="bg-gx-dark border-2 border-gx-green max-w-3xl w-full max-h-[85vh] overflow-y-auto relative clip-corner p-6 md:p-10 shadow-[0_0_50px_rgba(121,192,67,0.3)]">
-              
-              {/* Close Button */}
-              <button
-                onClick={closeDossier}
-                onMouseEnter={playHover}
-                className="absolute top-4 right-4 text-gx-green hover:text-white transition-colors cursor-pointer"
+          {/* Project grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {PROJECTS.slice(1).map((project, i) => (
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ duration: 0.65, delay: 0.25 + i * 0.09, ease: [0.22, 1, 0.36, 1] }}
+                className="glass-card rounded-3xl overflow-hidden cursor-pointer group"
+                onClick={() => setActiveProject(project)}
               >
-                <X size={24} />
-              </button>
-
-              {/* Modal Header */}
-              <div className="border-b border-gx-green/20 pb-4 mb-6 text-left">
-                <span className="text-gx-orange font-mono text-2xs uppercase tracking-widest font-bold">
-                  CLASSIFIED MISSION DIRECTORY // VOL.{activeGame.id.toUpperCase()}
-                </span>
-                <h2 className="font-display font-bold text-3xl md:text-5xl uppercase tracking-tighter text-white mt-1">
-                  {activeGame.title}
-                </h2>
-                <p className="text-gx-green font-mono text-xs mt-2 uppercase font-bold">
-                  {activeGame.subtitle}
-                </p>
-              </div>
-
-              {/* Modal Content */}
-              <div className="space-y-6 font-mono text-xs leading-relaxed text-gray-300 text-left">
-                
-                {/* Stats cards grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {activeGame.stats.map((st) => (
-                    <div key={st.label} className="bg-gx-black p-4 border border-gx-gray flex flex-col justify-center items-center">
-                      <span className="text-gray-500 uppercase tracking-widest text-3xs mb-1">{st.label}</span>
-                      <span className="text-lg font-display font-bold text-gx-green uppercase">{st.value}</span>
-                    </div>
-                  ))}
+                {/* Image */}
+                <div className="relative h-44 overflow-hidden">
+                  <Image
+                    src={project.imageUrl}
+                    alt={project.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    style={{ filter: 'saturate(0.8)' }}
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to top, var(--bg-glass) 0%, transparent 60%)' }}
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span
+                      className="px-2.5 py-1 rounded-full font-sans text-[9px] font-bold uppercase tracking-wider"
+                      style={{
+                        background: 'var(--glass-2)',
+                        border: '1px solid var(--glass-border-2)',
+                        color: CATEGORY_COLORS[project.category] || 'var(--accent)',
+                        backdropFilter: 'blur(12px)',
+                      }}
+                    >
+                      {project.category}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Brief section */}
-                <div>
-                  <h4 className="text-white font-display font-bold text-base uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Calendar className="text-gx-green w-4 h-4" />
-                    <span>Mission Parameters & Objective</span>
-                  </h4>
-                  <p className="bg-gx-black/40 p-4 border border-white/5 italic">
-                    &quot;{activeGame.missionBrief}&quot;
+                {/* Content */}
+                <div className="p-6">
+                  <h3
+                    className="font-display font-bold text-lg mb-2 leading-tight"
+                    style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
+                  >
+                    {project.title}
+                  </h3>
+                  <p className="font-sans text-sm leading-relaxed mb-5" style={{ color: 'var(--text-secondary)' }}>
+                    {project.subtitle}
+                  </p>
+
+                  {/* Mini stats */}
+                  <div
+                    className="grid grid-cols-3 gap-3 pt-4"
+                    style={{ borderTop: '1px solid var(--glass-border-1)' }}
+                  >
+                    {project.stats.map((stat) => (
+                      <div key={stat.label}>
+                        <p
+                          className="font-display font-bold text-base mb-0.5"
+                          style={{ color: project.accentColor, letterSpacing: '-0.03em' }}
+                        >
+                          {stat.value}
+                        </p>
+                        <p className="font-sans text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                          {stat.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div
+                    className="flex items-center gap-1.5 mt-5 text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-250 translate-y-1 group-hover:translate-y-0"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    <span>View Case Study</span>
+                    <ArrowRight size={13} />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Case Study Modal */}
+      <AnimatePresence>
+        {activeProject && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            {/* Backdrop */}
+            <motion.div
+              className="absolute inset-0"
+              style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(12px)' }}
+              onClick={() => setActiveProject(null)}
+            />
+
+            {/* Modal */}
+            <motion.div
+              className="relative glass-card rounded-[2rem] w-full max-w-2xl max-h-[88vh] overflow-y-auto"
+              initial={{ scale: 0.92, opacity: 0, filter: 'blur(8px)', y: 24 }}
+              animate={{ scale: 1, opacity: 1, filter: 'blur(0px)', y: 0 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {/* Gradient top bar */}
+              <div
+                className="h-1 w-full rounded-t-[2rem]"
+                style={{ background: activeProject.gradient.replace('rgba', 'rgb').replace('0.16', '1').replace('0.14', '1') }}
+              />
+              <div className="h-1 rounded-t-[2rem]" style={{ background: 'var(--gradient-primary)' }} />
+
+              {/* Close button */}
+              <button
+                onClick={() => setActiveProject(null)}
+                className="absolute top-5 right-5 w-9 h-9 rounded-xl flex items-center justify-center glass-chip transition-all duration-200"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--accent)')}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text-muted)')}
+              >
+                <X size={16} />
+              </button>
+
+              <div className="p-8 md:p-10">
+                {/* Header */}
+                <div className="mb-6">
+                  <span className="font-sans text-[10px] font-bold uppercase tracking-wider mb-2 block" style={{ color: CATEGORY_COLORS[activeProject.category] || 'var(--accent)' }}>
+                    {activeProject.category}
+                  </span>
+                  <h2
+                    className="font-display font-bold text-2xl md:text-3xl mb-2"
+                    style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
+                  >
+                    {activeProject.title}
+                  </h2>
+                  <p className="font-sans text-sm" style={{ color: 'var(--text-muted)' }}>
+                    {activeProject.subtitle}
                   </p>
                 </div>
 
-                {/* Grid layout for Weapons & Loot */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="text-white font-display font-bold text-base uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <Trophy className="text-gx-orange w-4 h-4" />
-                      <span>Weapons Array (Tech Used)</span>
-                    </h4>
-                    <ul className="list-inside list-disc space-y-1 text-gray-400 pl-1">
-                      {activeGame.weapons.map((w) => (
-                        <li key={w}>{w}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="text-white font-display font-bold text-base uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <ShieldCheck className="text-gx-green w-4 h-4" />
-                      <span>Loot Secured (Deliverables)</span>
-                    </h4>
-                    <ul className="list-inside list-disc space-y-1 text-gray-400 pl-1">
-                      {activeGame.lootSecured.map((l) => (
-                        <li key={l} className="font-bold text-white">{l}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Testimonial review */}
-                <div className="border-t border-white/5 pt-6 mt-4">
-                  <h4 className="text-white font-display font-bold text-base uppercase tracking-wider mb-2">
-                    Client Transmission log
-                  </h4>
-                  <div className="bg-gx-black/50 p-4 border border-gx-gray">
-                    <p className="italic text-gray-400 mb-2 font-light">
-                      &quot;{activeGame.clientReview.quote}&quot;
-                    </p>
-                    <div className="text-right">
-                      <span className="block font-bold text-gx-green text-[10px]">{activeGame.clientReview.author}</span>
-                      <span className="block text-gray-500 text-[9px] uppercase">{activeGame.clientReview.role}</span>
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  {activeProject.stats.map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="glass-chip rounded-2xl p-4 text-center"
+                    >
+                      <p
+                        className="font-display font-bold text-xl mb-1"
+                        style={{
+                          background: 'var(--gradient-primary)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          letterSpacing: '-0.04em',
+                        }}
+                      >
+                        {stat.value}
+                      </p>
+                      <p className="font-sans text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                        {stat.label}
+                      </p>
                     </div>
+                  ))}
+                </div>
+
+                {/* Overview */}
+                <div className="mb-5">
+                  <h4 className="font-sans text-xs font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                    Project Overview
+                  </h4>
+                  <p className="font-sans text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    {activeProject.overview}
+                  </p>
+                </div>
+
+                {/* Tech stack + Outcomes */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+                  <div>
+                    <h4 className="font-sans text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+                      Tech Stack
+                    </h4>
+                    <ul className="space-y-1.5">
+                      {activeProject.techStack.map((tech) => (
+                        <li key={tech} className="flex items-center gap-2 font-sans text-sm" style={{ color: 'var(--text-secondary)' }}>
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: activeProject.accentColor }} />
+                          {tech}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-sans text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
+                      Key Outcomes
+                    </h4>
+                    <ul className="space-y-1.5">
+                      {activeProject.outcomes.map((outcome) => (
+                        <li key={outcome} className="flex items-center gap-2 font-sans text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'var(--gradient-primary)' }} />
+                          {outcome}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
 
-              </div>
-
-              {/* Bottom Actions */}
-              <div className="flex justify-end border-t border-white/5 pt-6 mt-8">
-                <button
-                  onClick={closeDossier}
-                  onMouseEnter={playHover}
-                  className="px-8 py-3 bg-gx-green text-gx-black hover:bg-white font-display font-bold uppercase transition-colors duration-300 clip-corner"
+                {/* Testimonial */}
+                <div
+                  className="rounded-2xl p-5 relative overflow-hidden"
+                  style={{
+                    background: 'var(--accent-light)',
+                    border: '1px solid var(--glass-border-2)',
+                  }}
                 >
-                  Close Archive
-                </button>
+                  <Quote size={20} className="absolute top-4 right-4 opacity-10" style={{ color: 'var(--accent)' }} />
+                  <p className="font-sans text-sm leading-relaxed italic mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    &ldquo;{activeProject.testimonial.quote}&rdquo;
+                  </p>
+                  <p className="font-sans text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
+                    {activeProject.testimonial.author}
+                  </p>
+                  <p className="font-sans text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    {activeProject.testimonial.role}
+                  </p>
+                </div>
               </div>
-
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
-
-      </main>
+      </AnimatePresence>
 
       <Footer />
-    </motion.div>
+    </PageTransition>
   );
 }

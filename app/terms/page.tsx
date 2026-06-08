@@ -7,8 +7,8 @@ const TERMS_SECTIONS = [
   {
     title: 'OPERATOR SYSTEM ENGAGEMENT',
     paragraphs: [
-      'By engaging with the GloryX digital agency website and submitting target briefs through the Heist Planner interface, you agree to comply with standard security procedures and avoid malicious script injection attempts against our console ports.',
-      'Our AI strategist (G.L.O.R.Y. AI) operates with structured prompts. While we strive for extreme precision, strategy blueprints are for planning purposes and do not represent guaranteed commercial revenue metrics.'
+      'By engaging with the BinaryScouts digital agency website and submitting target briefs through the Heist Planner interface, you agree to comply with standard security procedures and avoid malicious script injection attempts against our console ports.',
+      'Our AI strategist (B.I.N.A.R.Y. AI) operates with structured prompts. While we strive for extreme precision, strategy blueprints are for planning purposes and do not represent guaranteed commercial revenue metrics.'
     ]
   },
   {
@@ -20,7 +20,7 @@ const TERMS_SECTIONS = [
   {
     title: 'INTELLECTUAL PROPERTIES',
     paragraphs: [
-      'The graphics, code, halftone designs, layout configurations, and sound chirps contained within the GloryX portal are protected by proprietary licensing models. Authorized operators are granted a limited license to review released briefs for educational usage.'
+      'The graphics, code, halftone designs, layout configurations, and sound chirps contained within the BinaryScouts portal are protected by proprietary licensing models. Authorized operators are granted a limited license to review released briefs for educational usage.'
     ]
   }
 ];

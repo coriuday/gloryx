@@ -1,6 +1,6 @@
-# Contributing to GloryX
+# Contributing to BinaryScouts
 
-Thank you for your interest in contributing to the GloryX Full-Stack Platform! Please review these guidelines before making changes or submitting pull requests.
+Thank you for your interest in contributing to the BinaryScouts Full-Stack Platform! Please review these guidelines before making changes or submitting pull requests.
 
 ## 🚀 Setting Up the Development Stack
 

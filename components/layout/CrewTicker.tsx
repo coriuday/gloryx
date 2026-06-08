@@ -1,55 +1,73 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Shield, Radio, Activity } from 'lucide-react';
+import { Activity, Zap, Globe } from 'lucide-react';
 
-const CREW_LOGS = [
-  'SYS_ALERT: AGENT GIBSON BYPASSING TARGET FIREWALL NODE #4...',
-  'OP_UPDATE: SEO CRUISE MISSILE INJECTED ON SaaS SEARCH MATRIX... CTR +85%',
-  'NET_LOG: CRM WHATSAPP AUTOMATION TUNNEL CREATED FOR LOGISTICS CLIENT...',
-  'SECURE_COMMS: DECRYPTED CORRESPONDENCE FROM INBOUND HEIST BRIEFING...',
-  'SYS_ALERT: AGENT KAPPA DEPLOYED FOR BRAND OVERHAUL VISUAL RENDERS...',
-  'NET_LOG: AUDITING SEMANTIC CLOUD CONVERGENCES FOR MARKETING PAYLOAD...'
+const TICKER_ITEMS = [
+  'System health: All services operational',
+  'CRM automation pipeline: Active — 240 leads processed this week',
+  'AI integration layer: Online — Response time 85ms avg',
+  'Infrastructure status: 99.98% uptime over last 30 days',
+  'New deployment: BinaryScouts Studio v3.0 successfully launched',
+  'Analytics: Organic traffic +127% this quarter across managed properties',
 ];
 
 const CrewTicker: React.FC = () => {
   const [logIndex, setLogIndex] = useState(0);
-  const [fade, setFade] = useState(true);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setFade(false);
+      setVisible(false);
       setTimeout(() => {
-        setLogIndex((prev) => (prev + 1) % CREW_LOGS.length);
-        setFade(true);
-      }, 300); // Wait for fade out
-    }, 4500);
-
+        setLogIndex((prev) => (prev + 1) % TICKER_ITEMS.length);
+        setVisible(true);
+      }, 350);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="w-full bg-[#030303] border-b border-gx-green/20 text-[10px] md:text-xs font-mono h-8 flex items-center justify-between px-4 text-gx-green relative z-[60] select-none uppercase tracking-wider">
+    <div
+      className="w-full h-8 flex items-center justify-between px-4 md:px-6 select-none relative z-[60]"
+      style={{
+        backgroundColor: 'var(--ticker-bg)',
+        borderBottom: '1px solid var(--ticker-border)',
+      }}
+    >
+      {/* Left: live status */}
       <div className="flex items-center gap-2">
-        <Radio className="w-3.5 h-3.5 text-gx-orange animate-pulse" />
-        <span className="text-gx-orange/80 font-bold">OPERATIONAL STATUS:</span>
-        <div
-          className={`transition-opacity duration-300 flex items-center gap-1.5 ${
-            fade ? 'opacity-100' : 'opacity-0'
-          }`}
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: 'var(--accent)' }} />
+          <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: 'var(--accent)' }} />
+        </span>
+        <span
+          className="font-sans text-[10px] md:text-xs font-semibold uppercase tracking-wider hidden sm:block"
+          style={{ color: 'var(--accent)' }}
         >
-          <span>{CREW_LOGS[logIndex]}</span>
-        </div>
+          Live
+        </span>
+        <span
+          className={`font-sans text-[10px] md:text-xs transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          {TICKER_ITEMS[logIndex]}
+        </span>
       </div>
-      
-      <div className="hidden sm:flex items-center gap-4 text-gx-green/50">
-        <div className="flex items-center gap-1">
-          <Shield className="w-3 h-3 text-gx-green/70" />
-          <span>PORT: ENCRYPTED</span>
+
+      {/* Right: system metrics */}
+      <div className="hidden md:flex items-center gap-5" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex items-center gap-1.5">
+          <Zap className="w-3 h-3" style={{ color: 'var(--accent)' }} />
+          <span className="text-[10px] font-medium">12ms avg</span>
         </div>
-        <div className="flex items-center gap-1">
-          <Activity className="w-3.5 h-3.5 text-gx-green/70 animate-pulse" />
-          <span>LATENCY: 12ms</span>
+        <div className="flex items-center gap-1.5">
+          <Activity className="w-3 h-3" style={{ color: 'var(--cyan)' }} />
+          <span className="text-[10px] font-medium">99.98% uptime</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Globe className="w-3 h-3" />
+          <span className="text-[10px] font-medium">3 regions active</span>
         </div>
       </div>
     </div>

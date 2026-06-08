@@ -4,239 +4,339 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { useAudio } from '@/components/hooks/AudioProvider';
-import { Shield, Users, Terminal, Award, Eye, Code, Zap } from 'lucide-react';
+import PageTransition from '@/components/motion/PageTransition';
+import { Sparkles, Zap, ShieldCheck, Target, Users, Code, ChevronDown } from 'lucide-react';
+import { ease, dur, viewport } from '@/lib/motion';
 
-interface Operator {
-  codeName: string;
+interface TeamMember {
+  name: string;
   role: string;
-  status: string;
-  signatureWeapon: string;
-  intel: string;
-  stats: { label: string; value: number }[];
+  specialty: string;
+  description: string;
+  emoji: string;
+  stats: { label: string; value: string }[];
+  accentColor: string;
+  gradient: string;
 }
 
-const CREW: Operator[] = [
+const TEAM: TeamMember[] = [
   {
-    codeName: 'AGENT GREEN',
-    role: 'Lead System Architect & Intruder',
-    status: 'ACTIVE',
-    signatureWeapon: 'Rust Gateway, Axum Router',
-    intel: 'Specializes in low-latency infrastructure design, server-side code optimization, and sandbox deployment sequences. Known for keeping pipelines locked down.',
+    name: 'Agent Green',
+    role: 'Lead System Architect',
+    specialty: 'Infrastructure & Backend',
+    description: 'Specialises in low-latency infrastructure design, server-side optimisation, and scalable deployment architecture. Keeps pipelines clean and systems bulletproof.',
+    emoji: '🏗️',
     stats: [
-      { label: 'Infiltration Speed', value: 95 },
-      { label: 'Integrity Rating', value: 98 },
-      { label: 'Coffee Intake', value: 85 }
-    ]
+      { label: 'Delivery Rate',    value: '100%' },
+      { label: 'Systems Built',    value: '28+' },
+      { label: 'Avg Load Time',    value: '< 0.4s' },
+    ],
+    accentColor: 'var(--accent)',
+    gradient: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(167,139,250,0.05))',
   },
   {
-    codeName: 'AGENT ORANGE',
-    role: 'PPC Commander & Ad Hijacker',
-    status: 'ACTIVE',
-    signatureWeapon: 'Halftone bidding scripts, SEM proxies',
-    intel: 'Master of search algorithms and bid optimization pipelines. Hijacks traffic flows to route targets to client conversion paths. ROI is his primary metric.',
+    name: 'Agent Orange',
+    role: 'Growth & Acquisition Lead',
+    specialty: 'PPC & Paid Channels',
+    description: 'Masters search algorithms and bid optimisation pipelines. Routes high-intent traffic to precisely engineered conversion paths with measurable ROI.',
+    emoji: '📈',
     stats: [
-      { label: 'Infiltration Speed', value: 90 },
-      { label: 'Integrity Rating', value: 88 },
-      { label: 'Coffee Intake', value: 92 }
-    ]
+      { label: 'Avg ROAS',         value: '4.8x' },
+      { label: 'Campaigns Managed',value: '50+' },
+      { label: 'Lead Cost Reduction',value: '45%' },
+    ],
+    accentColor: 'var(--rose)',
+    gradient: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(244,114,182,0.05))',
   },
   {
-    codeName: 'AGENT BLUE',
-    role: 'CRM Automation Sentry',
-    status: 'ACTIVE',
-    signatureWeapon: 'PostgreSQL queues, WhatsApp APIs',
-    intel: 'Engineers leads railroads and cron webhooks that connect targets with operators. Completely replaces manual workflows with secure automated triggers.',
+    name: 'Agent Blue',
+    role: 'Automation Architect',
+    specialty: 'CRM & AI Systems',
+    description: 'Engineers automated lead railways and webhook pipelines that connect businesses with their customers instantly. Replaces manual workflows with elegant, reliable systems.',
+    emoji: '⚙️',
     stats: [
-      { label: 'Infiltration Speed', value: 92 },
-      { label: 'Integrity Rating', value: 96 },
-      { label: 'Coffee Intake', value: 78 }
-    ]
-  }
+      { label: 'Workflows Built',  value: '120+' },
+      { label: 'Avg Response Time', value: '< 60s' },
+      { label: 'Uptime',           value: '99.9%' },
+    ],
+    accentColor: 'var(--sage)',
+    gradient: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(110,231,183,0.05))',
+  },
+];
+
+const VALUES = [
+  {
+    icon: Code,
+    label: 'Pure Engineering',
+    desc: 'No templates, no shortcuts. Every system is handcrafted to specification with clean, maintainable code.',
+    color: 'var(--accent)',
+    gradient: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(167,139,250,0.05))',
+    border: 'rgba(139,92,246,0.22)',
+  },
+  {
+    icon: Zap,
+    label: 'Speed + Precision',
+    desc: 'Every millisecond shaved increases conversion. We optimise for performance at every layer of the stack.',
+    color: 'var(--rose)',
+    gradient: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(244,114,182,0.05))',
+    border: 'rgba(236,72,153,0.20)',
+  },
+  {
+    icon: Target,
+    label: 'ROI-Obsessed',
+    desc: 'Every decision is tied to measurable outcomes. We build systems that justify themselves in the numbers.',
+    color: 'var(--sage)',
+    gradient: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(110,231,183,0.05))',
+    border: 'rgba(16,185,129,0.20)',
+  },
+  {
+    icon: ShieldCheck,
+    label: 'Security-First',
+    desc: 'Enterprise-grade security practices baked into every architecture decision from day one.',
+    color: 'var(--accent)',
+    gradient: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(167,139,250,0.05))',
+    border: 'rgba(139,92,246,0.22)',
+  },
 ];
 
 export default function AboutPage() {
-  const { playClick, playHover, playSuccess } = useAudio();
-  const [activeOperator, setActiveOperator] = useState<Operator | null>(null);
-
-  const handleOperatorClick = (op: Operator) => {
-    playSuccess();
-    setActiveOperator(activeOperator?.codeName === op.codeName ? null : op);
-  };
+  const [activeMember, setActiveMember] = useState<string | null>(null);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gx-black text-white font-sans selection:bg-gx-green selection:text-gx-black flex flex-col justify-between"
-    >
+    <PageTransition>
       <Navbar />
 
-      <main className="flex-grow pt-32 pb-24 px-4 max-w-7xl mx-auto w-full relative z-10">
-        <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-[0.02] pointer-events-none z-0" />
+      <main className="flex-grow pt-36 pb-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Page Title */}
-        <div className="mb-16 border-b-4 border-gx-green pb-6 text-left">
-          <span className="block text-gx-green font-display font-bold tracking-[0.2em] uppercase mb-2">
-            WHO WE ARE
-          </span>
-          <h1 className="font-display font-bold text-5xl md:text-7xl uppercase tracking-tighter text-white leading-none">
-            CREW PROTOCOL
-          </h1>
-        </div>
+          {/* ── Hero section ──────────────────────────────── */}
+          <motion.div
+            className="mb-24 max-w-3xl"
+            initial={{ opacity: 0, y: 32, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="eyebrow-badge mb-6">
+              <Users size={11} />
+              <span>The Studio</span>
+            </div>
+            <h1
+              className="font-display font-bold text-5xl md:text-7xl leading-tight tracking-tight mb-6"
+              style={{ color: 'var(--text-primary)', letterSpacing: '-0.05em' }}
+            >
+              We build systems{' '}
+              <span className="gradient-text">
+                that scale.
+              </span>
+            </h1>
+            <p
+              className="font-sans text-xl leading-relaxed max-w-2xl"
+              style={{ color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}
+            >
+              BinaryScouts is an AI-native engineering studio. We partner with ambitious founders and growth-stage companies to design and build the automated, intelligent systems that power modern business operations.
+            </p>
+          </motion.div>
 
-        {/* Manifesto Section */}
-        <section id="manifesto" className="mb-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 space-y-6 text-left font-mono text-sm leading-relaxed text-gray-300">
-            <h2 className="font-display font-bold text-3xl uppercase tracking-wider text-gx-orange mb-4">
-              GLORYX OPERATIONAL MANIFESTO
-            </h2>
-            <div className="border-l-4 border-gx-green pl-6 space-y-4 text-base italic text-white/90">
-              <p>
-                &quot;We don&apos;t build cookie-cutter landing pages or simple newsletters. We construct high-grade digital arsenals that hijack market share.&quot;
+          {/* ── Manifesto glass card ──────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
+            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="glass-card rounded-[2rem] p-10 md:p-14 mb-24 relative overflow-hidden"
+          >
+            <div
+              className="absolute inset-0 rounded-[2rem] pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse 70% 60% at 30% 50%, rgba(139,92,246,0.07) 0%, transparent 70%)' }}
+            />
+            <div
+              className="absolute inset-x-0 top-0 h-0.5 rounded-t-[2rem]"
+              style={{ background: 'var(--gradient-dreamy)', opacity: 0.4 }}
+            />
+            <div className="max-w-3xl relative z-10">
+              <p
+                className="font-display font-bold text-2xl md:text-3xl leading-relaxed mb-6"
+                style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
+              >
+                &ldquo;In a market of generic agency models, we operate as a precision-focused engineering team. We combine creative design, intelligent automation, and robust code architectures to build systems that actually move the needle.&rdquo;
+              </p>
+              <p className="font-sans text-base" style={{ color: 'var(--text-secondary)' }}>
+                — BinaryScouts Studio Manifesto
               </p>
             </div>
-            <p>
-              In a digital matrix cluttered with generic agency models, GloryX operates as an elite strike squad. We combine raw creative branding, high-octane video cinematic engines, and robust code architectures.
-            </p>
-            <p>
-              By leveraging next-generation languages like Rust, high-speed microservices in Python, and seamless Next.js server actions, we develop systems that load in bullet-time and scale without friction.
-            </p>
-          </div>
-          <div className="lg:col-span-5 bg-gx-dark border-2 border-white/5 p-8 relative clip-corner flex flex-col justify-between min-h-[300px]">
-            <div className="flex justify-between items-start mb-6">
-              <Shield className="w-12 h-12 text-gx-green" />
-              <span className="text-gray-600 text-3xs font-mono font-bold uppercase">SYSTEM DIRECTORY v2.5</span>
-            </div>
-            <div>
-              <h3 className="font-display font-bold text-xl uppercase tracking-wider text-white mb-2">OPERATIONAL METRICS</h3>
-              <ul className="space-y-2 text-2xs font-mono text-gray-400">
-                <li className="flex justify-between border-b border-white/5 pb-1"><span>Target Retention:</span> <span className="text-gx-green font-bold">100% SECURE</span></li>
-                <li className="flex justify-between border-b border-white/5 pb-1"><span>Average Load Speed:</span> <span className="text-gx-green font-bold">&lt; 0.4s</span></li>
-                <li className="flex justify-between"><span>Active Missions:</span> <span className="text-gx-orange font-bold">12 SIMULTANEOUS</span></li>
-              </ul>
-            </div>
-          </div>
-        </section>
+          </motion.div>
 
-        {/* Crew / Operators Grid */}
-        <section className="mb-20">
-          <h2 className="font-display font-bold text-4xl uppercase tracking-tighter text-white mb-8 border-b border-gx-orange/30 pb-4 text-left">
-            ACTIVE SYSTEM OPERATORS
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {CREW.map((op) => {
-              const isActive = activeOperator?.codeName === op.codeName;
-              return (
-                <div
-                  key={op.codeName}
-                  onClick={() => handleOperatorClick(op)}
-                  onMouseEnter={playHover}
-                  className={`border cursor-pointer transition-all duration-300 p-6 flex flex-col justify-between text-left select-none relative group clip-corner ${
-                    isActive
-                      ? 'border-gx-green bg-gx-green/5 shadow-[0_0_20px_rgba(121,192,67,0.15)]'
-                      : 'border-white/5 bg-gx-dark hover:border-white/20'
-                  }`}
-                >
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-gray-500 font-mono text-3xs uppercase font-bold tracking-widest">
-                        AGENT DOSSIER
-                      </span>
-                      <span className={`px-2 py-0.5 font-mono text-3xs font-bold uppercase rounded ${
-                        op.status === 'ACTIVE' ? 'bg-gx-green/10 text-gx-green border border-gx-green/20' : 'bg-gx-orange/10 text-gx-orange'
-                      }`}>
-                        {op.status}
-                      </span>
+          {/* ── Team section ─────────────────────────────── */}
+          <section className="mb-24">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-10"
+            >
+              <div className="eyebrow-badge mb-4">
+                <Sparkles size={11} />
+                <span>The Team</span>
+              </div>
+              <h2
+                className="font-display font-bold text-3xl md:text-4xl"
+                style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
+              >
+                The people behind{' '}
+                <span className="gradient-text">the systems.</span>
+              </h2>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {TEAM.map((member, i) => {
+                const isActive = activeMember === member.name;
+                return (
+                  <motion.div
+                    key={member.name}
+                    initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+                    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.65, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    className="glass-card rounded-3xl p-7 cursor-pointer group"
+                    onClick={() => setActiveMember(isActive ? null : member.name)}
+                    style={{
+                      borderColor: isActive ? member.accentColor : undefined,
+                      boxShadow: isActive ? `0 0 40px ${member.accentColor}22, var(--shadow-card), var(--glass-inner)` : undefined,
+                    }}
+                  >
+                    {/* Avatar */}
+                    <div className="mb-5 flex items-center gap-4">
+                      <div
+                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl"
+                        style={{ background: member.gradient, border: `1px solid ${member.accentColor}33` }}
+                      >
+                        {member.emoji}
+                      </div>
+                      <div>
+                        <h3
+                          className="font-display font-bold text-base"
+                          style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em' }}
+                        >
+                          {member.name}
+                        </h3>
+                        <p className="font-sans text-xs" style={{ color: member.accentColor }}>
+                          {member.specialty}
+                        </p>
+                      </div>
+                      <motion.div
+                        className="ml-auto"
+                        animate={{ rotate: isActive ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <ChevronDown size={16} />
+                      </motion.div>
                     </div>
 
-                    <h3 className={`font-display font-bold text-3xl tracking-tight transition-colors ${isActive ? 'text-gx-green' : 'text-white group-hover:text-gx-green'}`}>
-                      {op.codeName}
-                    </h3>
-                    <p className="text-gray-400 font-mono text-2xs uppercase font-bold mt-1 mb-4">
-                      {op.role}
+                    <p className="font-sans text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}>
+                      {member.role}
+                    </p>
+                    <p className="font-sans text-sm leading-relaxed mb-5" style={{ color: 'var(--text-secondary)' }}>
+                      {member.description}
                     </p>
 
-                    <div className="font-mono text-xs text-gray-300 space-y-4 mt-6">
-                      <div className="bg-gx-black/40 p-3 border border-white/5">
-                        <span className="block text-gray-500 text-3xs uppercase font-bold mb-1">SIGNATURE WEAPON</span>
-                        <span className="text-white font-bold text-2xs">{op.signatureWeapon}</span>
-                      </div>
-                      <p className="leading-relaxed text-gray-400 text-2xs">{op.intel}</p>
-                    </div>
-                  </div>
-
-                  {/* Expandable Agent Stats */}
-                  <div className="mt-8 pt-4 border-t border-white/5 font-mono text-3xs">
-                    {isActive ? (
-                      <div className="space-y-3">
-                        {op.stats.map((st) => (
-                          <div key={st.label}>
-                            <div className="flex justify-between text-gray-400 font-bold mb-1">
-                              <span>{st.label.toUpperCase()}</span>
-                              <span className="text-white">{st.value}%</span>
+                    {/* Expandable stats */}
+                    {isActive && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="pt-5 overflow-hidden"
+                        style={{ borderTop: '1px solid var(--glass-border-1)' }}
+                      >
+                        <div className="grid grid-cols-3 gap-3">
+                          {member.stats.map((stat) => (
+                            <div key={stat.label} className="text-center">
+                              <p
+                                className="font-display font-bold text-lg mb-0.5"
+                                style={{
+                                  background: 'var(--gradient-primary)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                  letterSpacing: '-0.04em',
+                                }}
+                              >
+                                {stat.value}
+                              </p>
+                              <p className="font-sans text-[9px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                                {stat.label}
+                              </p>
                             </div>
-                            <div className="w-full bg-gx-black h-1.5 border border-white/5">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${st.value}%` }}
-                                className="bg-gx-green h-full"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-gx-green font-bold group-hover:translate-x-2 transition-transform inline-block">
-                        EXAMINE OPERATOR STATS &gt;&gt;
-                      </span>
+                          ))}
+                        </div>
+                      </motion.div>
                     )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ── Values section ────────────────────────────── */}
+          <section>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-10"
+            >
+              <div className="eyebrow-badge mb-4">
+                <Sparkles size={11} />
+                <span>Our Principles</span>
+              </div>
+              <h2
+                className="font-display font-bold text-3xl md:text-4xl"
+                style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
+              >
+                What we{' '}
+                <span className="gradient-text">believe in.</span>
+              </h2>
+            </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {VALUES.map((val, i) => (
+                <motion.div
+                  key={val.label}
+                  initial={{ opacity: 0, y: 24, filter: 'blur(5px)' }}
+                  whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.09, ease: [0.22, 1, 0.36, 1] }}
+                  className="glass-card rounded-3xl p-7 flex items-start gap-5 group"
+                >
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: val.gradient, border: `1px solid ${val.border}` }}
+                  >
+                    <val.icon size={18} style={{ color: val.color }} />
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Press / Core Values Section */}
-        <section id="press" className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-          <div className="bg-gx-dark border border-white/5 p-8 clip-corner flex flex-col justify-between font-mono">
-            <h3 className="font-display font-bold text-xl uppercase tracking-wider text-gx-green mb-4 flex items-center gap-2">
-              <Award className="w-5 h-5 text-gx-green" />
-              <span>TRANSMISSION ARCHIVE (PRESS)</span>
-            </h3>
-            <div className="space-y-4 text-xs text-gray-400 leading-relaxed">
-              <p>
-                <strong className="text-white uppercase">[2025.10] DIGITAL FORBES DIAL:</strong> &quot;GloryX breaks conventions by integrating terminal interfaces into CRM flows, yielding record retention ratings for early enterprise target portfolios.&quot;
-              </p>
-              <p>
-                <strong className="text-white uppercase">[2024.12] CYBER TECH DIGEST:</strong> &quot;The Axum Rust gateway deployed by GloryX handles high-velocity data vaults safely without the latency bloat of typical CRM configurations.&quot;
-              </p>
+                  <div>
+                    <h4
+                      className="font-display font-bold text-base mb-2"
+                      style={{ color: 'var(--text-primary)', letterSpacing: '-0.025em' }}
+                    >
+                      {val.label}
+                    </h4>
+                    <p className="font-sans text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                      {val.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </section>
 
-          <div className="bg-gx-dark border border-white/5 p-8 clip-corner flex flex-col justify-between font-mono">
-            <h3 className="font-display font-bold text-xl uppercase tracking-wider text-gx-orange mb-4 flex items-center gap-2">
-              <Users className="w-5 h-5 text-gx-orange" />
-              <span>CORE DRILL PROTOCOLS</span>
-            </h3>
-            <div className="space-y-3 text-xs text-gray-400">
-              <div className="flex gap-3">
-                <Code className="w-5 h-5 text-gx-green flex-shrink-0" />
-                <p><strong>PURE CODE EXECUTION:</strong> No bloated site builders or visual drag-and-drops. We write clean, compiled, high-efficiency systems.</p>
-              </div>
-              <div className="flex gap-3">
-                <Zap className="w-5 h-5 text-gx-green flex-shrink-0" />
-                <p><strong>SPEED DEPLOYMENT:</strong> Every milliseconds shaved off increases client conversion thresholds. High performance is non-negotiable.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
+        </div>
       </main>
 
       <Footer />
-    </motion.div>
+    </PageTransition>
   );
 }

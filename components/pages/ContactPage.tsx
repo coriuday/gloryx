@@ -1,190 +1,310 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { useAudio } from '@/components/hooks/AudioProvider';
-import { Wifi, Shield, Send, Terminal, Loader2, Check } from 'lucide-react';
+import PageTransition from '@/components/motion/PageTransition';
+import { Mail, MessageSquare, Send, Sparkles, CheckCircle, Loader2, MapPin, Clock, Phone } from 'lucide-react';
+import { ease, dur, viewport } from '@/lib/motion';
+
+const INFO_CARDS = [
+  {
+    icon: Mail,
+    title: 'Email',
+    value: 'hello@binaryscouts.com',
+    sub: 'Usually responds within 4 hours',
+    gradient: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(167,139,250,0.05))',
+    iconColor: 'var(--accent)',
+    border: 'rgba(139,92,246,0.22)',
+  },
+  {
+    icon: Clock,
+    title: 'Availability',
+    value: 'Mon – Fri, 9am – 6pm GMT',
+    sub: 'Emergency support available',
+    gradient: 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(244,114,182,0.05))',
+    iconColor: 'var(--rose)',
+    border: 'rgba(236,72,153,0.20)',
+  },
+  {
+    icon: MapPin,
+    title: 'Studio',
+    value: 'Remote-first, globally distributed',
+    sub: 'Serving clients worldwide',
+    gradient: 'linear-gradient(135deg, rgba(16,185,129,0.12), rgba(110,231,183,0.05))',
+    iconColor: 'var(--sage)',
+    border: 'rgba(16,185,129,0.20)',
+  },
+];
+
+type FormStatus = 'idle' | 'loading' | 'success';
 
 export default function ContactPage() {
-  const { playClick, playHover, playSuccess } = useAudio();
-  const [form, setForm] = useState({ codeName: '', email: '', message: '' });
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState<string[]>([]);
-  const [complete, setComplete] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', message: '', budget: '' });
+  const [status, setStatus] = useState<FormStatus>('idle');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.codeName || !form.email) return;
+    if (!form.name || !form.email || !form.message) return;
 
-    playClick();
-    setLoading(true);
-    setProgress(['INITIATING DIRECT COMS HANDSHAKE...', 'ROUTING THROUGH SECURE AXUM PORTS...']);
-
-    // Mock progress steps
-    const logs = [
-      'SHIELD CRYPTO WRAPPERS INITIALIZED...',
-      'DIALING SATELLITE COMS GRID...',
-      'ENCRYPTING DOSSIER PAYLOAD...',
-      'COMMITTING Dossier TO CORE RUST VAULT...',
-      'TRANSMISSION COMPLETE.'
-    ];
-
-    logs.forEach((log, index) => {
-      setTimeout(() => {
-        setProgress((prev) => [...prev, log]);
-        if (index === logs.length - 1) {
-          playSuccess();
-          setLoading(false);
-          setComplete(true);
-          setForm({ codeName: '', email: '', message: '' });
-        }
-      }, (index + 1) * 800);
-    });
+    setStatus('loading');
+    setTimeout(() => {
+      setStatus('success');
+    }, 1800);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gx-black text-white font-sans selection:bg-gx-green selection:text-gx-black flex flex-col justify-between"
-    >
+    <PageTransition>
       <Navbar />
 
-      <main className="flex-grow pt-32 pb-24 px-4 max-w-4xl mx-auto w-full relative z-10">
-        <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-[0.02] pointer-events-none z-0" />
+      <main className="flex-grow pt-36 pb-24 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Page Title */}
-        <div className="mb-12 border-b-4 border-gx-green pb-6 text-left">
-          <span className="block text-gx-green font-display font-bold tracking-[0.2em] uppercase mb-2">
-            SECURE ENCRYPTED COMMUNICATIONS
-          </span>
-          <h1 className="font-display font-bold text-5xl md:text-7xl uppercase tracking-tighter text-white leading-none">
-            ESTABLISH LINK
-          </h1>
-        </div>
-
-        {/* Main Interface Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 text-left font-mono">
-          
-          {/* Instructions and connection status */}
-          <div className="md:col-span-5 bg-gx-dark border border-white/5 p-6 clip-corner flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <Wifi className="w-8 h-8 text-gx-green animate-pulse" />
-                <span className="text-gray-600 text-3xs font-bold uppercase">SECURE LINK STATUS: ONLINE</span>
-              </div>
-              <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider mb-2">COMM TRANSCEIVER</h3>
-              <p className="text-2xs text-gray-400 leading-relaxed">
-                Transmit your project specs, marketing bottlenecks, or custom database targets directly to GloryX command central.
-              </p>
-              <p className="text-2xs text-gray-400 leading-relaxed mt-4">
-                All records are logged dynamically in local gateways with cryptographic file IDs.
-              </p>
+          {/* Header */}
+          <motion.div
+            className="mb-16 max-w-2xl"
+            initial={{ opacity: 0, y: 32, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="eyebrow-badge mb-6">
+              <MessageSquare size={11} />
+              <span>Get in Touch</span>
             </div>
-            <div className="border-t border-white/5 pt-4 mt-6 text-3xs text-gx-orange flex items-center gap-2">
-              <Shield className="w-4 h-4 text-gx-orange" />
-              <span>SECURE END-TO-END ENCRYPTION ACTIVE</span>
-            </div>
-          </div>
+            <h1
+              className="font-display font-bold text-5xl md:text-6xl tracking-tight mb-5"
+              style={{ color: 'var(--text-primary)', letterSpacing: '-0.05em' }}
+            >
+              Let&apos;s build something{' '}
+              <span className="gradient-text">remarkable.</span>
+            </h1>
+            <p
+              className="font-sans text-lg leading-relaxed"
+              style={{ color: 'var(--text-secondary)', letterSpacing: '-0.01em' }}
+            >
+              Tell us about your project and we&apos;ll get back to you with a tailored strategy within one business day.
+            </p>
+          </motion.div>
 
-          {/* Transmitter Form */}
-          <div className="md:col-span-7 bg-gx-dark border-2 border-white/10 p-6 md:p-8 clip-corner shadow-[0_0_40px_rgba(0,0,0,0.6)]">
-            {loading || complete ? (
-              <div className="min-h-[300px] flex flex-col justify-between">
-                <div className="space-y-3">
-                  <span className="block text-gx-green text-3xs font-bold uppercase tracking-widest flex items-center gap-1.5">
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>TRANSMITTING DIRECT SIGNAL</span>
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-3.5 h-3.5" />
-                        <span>LINK ESTABLISHED SUCCESSFULLY</span>
-                      </>
-                    )}
-                  </span>
-                  <div className="bg-gx-black/85 p-4 border border-white/5 text-2xs space-y-1 max-h-[220px] overflow-y-auto leading-relaxed text-gx-green">
-                    {progress.map((p, idx) => (
-                      <div key={idx} className="flex gap-2">
-                        <span className="text-gray-500 font-bold">&gt;</span>
-                        <span>{p}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {complete && (
-                  <button
-                    onClick={() => {
-                      playClick();
-                      setComplete(false);
-                      setProgress([]);
-                    }}
-                    className="w-full bg-gx-green hover:bg-white text-gx-black font-display font-bold uppercase py-3 transition-colors clip-corner text-xs"
-                  >
-                    RESET TRANSCEIVER
-                  </button>
-                )}
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5 text-xs">
-                <div className="space-y-1">
-                  <label className="block text-gray-500 text-3xs uppercase font-bold">OPERATOR CODENAME</label>
-                  <input
-                    type="text"
-                    required
-                    value={form.codeName}
-                    onChange={(e) => setForm({ ...form, codeName: e.target.value })}
-                    placeholder="E.G. AGENT PHOENIX"
-                    className="w-full bg-gx-black border border-white/10 p-3 text-2xs focus:outline-none focus:border-gx-green uppercase text-white placeholder-gray-800"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-gray-500 text-3xs uppercase font-bold">SECURE CHANNEL FREQUENCY (EMAIL)</label>
-                  <input
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="E.G. CONTACT@YOURCORP.COM"
-                    className="w-full bg-gx-black border border-white/10 p-3 text-2xs focus:outline-none focus:border-gx-green uppercase text-white placeholder-gray-800"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-gray-500 text-3xs uppercase font-bold">SPECIAL INTEL BRIEF (MESSAGE)</label>
-                  <textarea
-                    required
-                    rows={5}
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    placeholder="DESCRIBE PROJECT WEAPON TARGETS AND PARAMETERS IN DETAIL..."
-                    className="w-full bg-gx-black border border-white/10 p-3 text-2xs focus:outline-none focus:border-gx-green uppercase text-white placeholder-gray-800 font-mono"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  onMouseEnter={playHover}
-                  className="w-full bg-gx-green hover:bg-white text-gx-black font-display font-bold uppercase py-3.5 transition-colors clip-corner text-sm flex items-center justify-center gap-2"
+          {/* Info cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
+            {INFO_CARDS.map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 20, filter: 'blur(5px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ duration: 0.6, delay: 0.1 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="glass-card rounded-2xl p-5 flex items-center gap-4"
+              >
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: card.gradient, border: `1px solid ${card.border}` }}
                 >
-                  <Send size={14} />
-                  <span>DISPATCH SIGNAL</span>
-                </button>
-              </form>
-            )}
+                  <card.icon size={16} style={{ color: card.iconColor }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-sans text-[10px] uppercase tracking-wider mb-0.5" style={{ color: 'var(--text-muted)' }}>
+                    {card.title}
+                  </p>
+                  <p className="font-sans text-sm font-semibold truncate" style={{ color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                    {card.value}
+                  </p>
+                  <p className="font-sans text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    {card.sub}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </div>
 
+          {/* Main form card */}
+          <motion.div
+            initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="glass-card rounded-[2rem] overflow-hidden"
+          >
+            {/* Gradient top highlight */}
+            <div
+              className="h-0.5 w-full"
+              style={{ background: 'var(--gradient-dreamy)', opacity: 0.5 }}
+            />
+
+            <div className="p-8 md:p-12 relative overflow-hidden">
+              {/* Inner radial gradient */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse 60% 50% at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 70%)' }}
+              />
+
+              <AnimatePresence mode="wait">
+                {status === 'success' ? (
+                  /* Success state */
+                  <motion.div
+                    key="success"
+                    initial={{ opacity: 0, scale: 0.96, filter: 'blur(6px)' }}
+                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="text-center py-12 relative z-10"
+                  >
+                    <motion.div
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.1, duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+                      className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+                      style={{ background: 'var(--gradient-primary)', boxShadow: 'var(--shadow-brand)' }}
+                    >
+                      <CheckCircle size={32} className="text-white" />
+                    </motion.div>
+                    <h3
+                      className="font-display font-bold text-3xl mb-3"
+                      style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
+                    >
+                      Message sent!
+                    </h3>
+                    <p className="font-sans text-lg" style={{ color: 'var(--text-secondary)' }}>
+                      We&apos;ll be in touch within one business day with a tailored response.
+                    </p>
+                    <button
+                      onClick={() => { setStatus('idle'); setForm({ name: '', email: '', message: '', budget: '' }); }}
+                      className="btn-secondary px-8 py-3 text-sm mt-8"
+                    >
+                      Send another message
+                    </button>
+                  </motion.div>
+                ) : (
+                  /* Form */
+                  <motion.form
+                    key="form"
+                    onSubmit={handleSubmit}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    {/* Name */}
+                    <div className="flex flex-col gap-2">
+                      <label className="font-sans text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                        Your Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        placeholder="Jane Smith"
+                        className="input-cinematic"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex flex-col gap-2">
+                      <label className="font-sans text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        placeholder="jane@company.com"
+                        className="input-cinematic"
+                      />
+                    </div>
+
+                    {/* Budget */}
+                    <div className="flex flex-col gap-2">
+                      <label className="font-sans text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                        Project Budget
+                      </label>
+                      <select
+                        value={form.budget}
+                        onChange={(e) => setForm({ ...form, budget: e.target.value })}
+                        className="input-cinematic"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="" disabled>Select a range...</option>
+                        <option value="under-5k">Under $5,000</option>
+                        <option value="5k-15k">$5,000 – $15,000</option>
+                        <option value="15k-50k">$15,000 – $50,000</option>
+                        <option value="50k-plus">$50,000+</option>
+                      </select>
+                    </div>
+
+                    {/* Placeholder for layout alignment */}
+                    <div className="hidden md:block" />
+
+                    {/* Message — full width */}
+                    <div className="md:col-span-2 flex flex-col gap-2">
+                      <label className="font-sans text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                        Tell Us About Your Project *
+                      </label>
+                      <textarea
+                        required
+                        rows={5}
+                        value={form.message}
+                        onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        placeholder="Describe what you're building, what problem you're solving, and what success looks like..."
+                        className="input-cinematic"
+                        style={{ resize: 'vertical', minHeight: 120 }}
+                      />
+                    </div>
+
+                    {/* Submit */}
+                    <div className="md:col-span-2 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                      <p className="font-sans text-sm" style={{ color: 'var(--text-muted)' }}>
+                        No commitment required. We&apos;ll respond within one business day.
+                      </p>
+                      <button
+                        type="submit"
+                        disabled={status === 'loading'}
+                        className="btn-primary text-base px-8 py-4 gap-2 whitespace-nowrap flex-shrink-0"
+                        style={{ opacity: status === 'loading' ? 0.7 : 1 }}
+                      >
+                        {status === 'loading' ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send size={15} />
+                            Send Message
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* Alternative CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-10 text-center"
+          >
+            <p className="font-sans text-sm mb-3" style={{ color: 'var(--text-muted)' }}>
+              Prefer a direct conversation?
+            </p>
+            <a href="/planner">
+              <button className="btn-primary text-base px-8 py-3.5 gap-2">
+                <Sparkles size={15} />
+                Book a Free 30-Min Strategy Call
+              </button>
+            </a>
+          </motion.div>
+
+        </div>
       </main>
 
       <Footer />
-    </motion.div>
+    </PageTransition>
   );
 }
